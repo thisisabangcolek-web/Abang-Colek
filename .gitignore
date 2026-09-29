@@ -33,3 +33,5 @@ data/normalized_v4/
 data/runs/
 data/workspace_active/
 data/active_run.json
+data/*.db
+supabase_seed.sql

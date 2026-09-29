@@ -1,119 +1,99 @@
-# Implementation Improvements
+---
+title: "ABANGCOLEK Implementation Improvements & Engineering Solutions"
+document_id: "DOC-AC-IMPROVEMENTS-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:16:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "ACTIVE"
+---
 
-## Why this recovery was necessary
+# ABANGCOLEK Implementation Improvements & Engineering Solutions
 
-The earlier implementation could generate or hard-code representative social records, media descriptions and business assumptions, then allow those outputs to flow into JEV, BI, the Knowledge Graph, Digital Twin and PRD.
+## 1. Why Systematic Recovery Was Necessary
 
-That created an epistemic failure: generated information could look like observed business evidence.
+The initial prototype implementation allowed synthetic social records, hard-coded assumptions, and unverified mock fixtures to propagate into the analytics engine and Knowledge Graph. This produced an epistemic failure where generated data appeared identical to observed business facts.
 
-The recovery changed the project from **output-first** to **evidence-first**.
+The system was subsequently re-architected from **output-first** to **evidence-first**, followed by a comprehensive audit and hardening cycle (AC-01 through AC-16).
 
-## Improvement 1 — Evidence decontamination
+---
 
-Completed changes:
+## 2. Chronological Record of Completed Improvements
 
-- synthetic/mock production evidence quarantined
-- legacy normalized records removed from active production inputs
-- manually authored “verified real data” path disabled
-- legacy reports archived/provisionally gated
-- current production Evidence Lake accepts only provenance-valid records
+### Improvement 1 — Evidence Decontamination
+* Synthetic fixtures quarantined (`data/quarantine/`).
+* Legacy normalized records purged from active production directories.
+* Production Evidence Lake restricted to records with verified capture receipts.
 
-Result: `synthetic authoritative records = 0`.
+### Improvement 2 — Provenance Enforcement
+* `src/evidence/integrity.py` validates SHA-256 payload consistency, HTTP receipts, and non-empty URLs.
+* Flags `synthetic=false` and `authoritative=true` are verified against machine receipts rather than trusted blindly.
 
-## Improvement 2 — Provenance enforcement
+### Improvement 3 — Live JEV Authority & Fail-Closed Behavior
+* Disallows silent fallback to rule-based heuristics for authoritative runs.
+* Bundled System-1 evaluations executed via TypeSafe API with `root_cause=UNDETERMINED` safety invariant.
 
-`src/evidence/integrity.py` now blocks authoritative records without capture proof.
+### Improvement 4 — No-Key Social Collection
+* Headless Playwright browser automation for public JS-rendered pages.
+* Stable metadata extraction via `yt-dlp` and `gallery-dl` for TikTok.
 
-Setting `synthetic=false` or `authoritative=true` is not sufficient to bypass provenance validation.
+### Improvement 5 — Local-PC Discovery Lane with JEV
+* Bounded local history exploration explicitly tagged as `DISCOVERY_ONLY`.
+* Requires public re-capture before any discovered lead can enter authoritative analytics.
 
-## Improvement 3 — Live JEV is authoritative and fail-closed
+### Improvement 6 — Media Hallucination Removal
+* Banned synthetic OCR/ASR generation when media bytes are unavailable. Unprocessed media remains explicitly `PENDING`.
 
-The old production path could silently fall back to deterministic rules when TypeSafe failed.
+### Improvement 7 — Snapshot Deduplication
+* Preserves all raw captures for forensic audit while suppressing repeat snapshots during normalization.
 
-Current production behavior:
+### Improvement 8 — Truth-Oriented Test Architecture
+* Test suites refactored to verify schema enforcement, error handling, and abstention rather than hard-coded business assertions.
 
-- discover/use live TypeSafe JEV
-- record actual resolved model
-- one bundled System One call per unique evidence item
-- split one JEV result into compatible decision views
-- reject silent fallback for authoritative discovery
-- retain `root_cause_status=UNDETERMINED` without operational proof
+---
 
-Current verified model: `jev-1.13.0`.
+## 3. Post-Audit Advancements (AC-01 to AC-16 Hardening)
 
-## Improvement 4 — No-key social collection
+### Improvement 9 — ID Collision Elimination via Platform Segmentation (AC-02)
+* **Problem**: Profiles sharing handles across platforms (e.g. Threads `@airpoolstylo` vs. Instagram `@airpoolstylo`) collided onto `norm_profile_airpoolstylo.json`, causing 128 batch records to collapse into 127 files.
+* **Solution**: Implemented [src/evidence/identity.py](file:///D:/ABANGCOLEK/src/evidence/identity.py), enforcing platform-prefixed SHA-256 hashes (`cnt_<hash>`, `cap_<hash>`, `norm_<hash>`).
+* **Result**: Exactly **128 unique normalized files** produced with 0 collisions.
 
-Official social APIs are no longer a hard dependency for public discovery.
+### Improvement 10 — Canonical Record Mapping & BI Post Counting Fix (AC-03)
+* **Problem**: BI aggregation logic did not recognize `public_post_snapshot`, `public_video_metadata`, or `public_photo_metadata`, reporting `total_posts = 0`.
+* **Solution**: Introduced [src/models/record_kind.py](file:///D:/ABANGCOLEK/src/models/record_kind.py) and updated [src/analytics/bi_engine.py](file:///D:/ABANGCOLEK/src/analytics/bi_engine.py).
+* **Result**: BI correctly aggregates **123 posts/videos/photos**.
 
-Working lanes include:
+### Improvement 11 — JEV Model Pinning & Cache Lineage Determinism (AC-04, AC-12)
+* **Problem**: Dynamic aliases (`jev-latest`) caused cache misses because `_cached()` rejects non-deterministic version strings.
+* **Solution**: Pinned `DEFAULT_MODEL = "jev-1.13.0"` in [src/jev/typesafe_client.py](file:///D:/ABANGCOLEK/src/jev/typesafe_client.py) and enhanced `resolve_model()`.
+* **Result**: **100% cache hit rate** on pipeline re-runs across all 128 records.
 
-- Playwright public JS-rendered capture
-- TikTok URL discovery
-- `yt-dlp` stable TikTok metadata
-- `gallery-dl` TikTok photo fallback
-- owner exports when available
-- optional official API enrichment
-- planned archive/search recovery
+### Improvement 12 — Atomic Pipeline Staging & Verification Engine (AC-05, AC-08)
+* **Problem**: Mid-run failures could leave corrupted, partial state in active directories.
+* **Solution**: [src/scripts/rebuild_pipeline.py](file:///D:/ABANGCOLEK/src/scripts/rebuild_pipeline.py) writes runs to staged run directories (`data/runs/<run_id>`), enforces a 12-check verification gate, and only activates valid runs.
+* **Result**: 12/12 validation checks PASS before symlink/mirror activation.
 
-This approach preserves legitimate source provenance while avoiding generated replacement data.
+### Improvement 13 — Enterprise Supabase PostgreSQL Schema & Sync Pipeline
+* **Problem**: Need for a cloud-scale, relational data layer with Row-Level Security (RLS) for multi-user access.
+* **Solution**:
+  * Created [src/db/schema.sql](file:///D:/ABANGCOLEK/src/db/schema.sql) with 11 tables, RLS policies, GIN indexes, and Security Invoker views.
+  * Created [src/db/supabase_sync.py](file:///D:/ABANGCOLEK/src/db/supabase_sync.py), generating an idempotent [supabase_seed.sql](file:///D:/ABANGCOLEK/supabase_seed.sql) (1.18 MB).
 
-## Improvement 5 — Local-PC discovery with JEV
+### Improvement 14 — Zero-Dependency Interactive Evidence Review UI & REST Server (AC-16)
+* **Problem**: Operators had to manually inspect raw JSON files or SQLite databases to verify claims.
+* **Solution**: Created [src/workspace/server.py](file:///D:/ABANGCOLEK/src/workspace/server.py), a pure standard-library HTTP server and REST API serving a high-aesthetic Dark OLED Single-Page App on `http://127.0.0.1:8765`.
+* **Features**: Source Library filter, JEV claim auditor, Knowledge Graph timeline browser, and the 8 Foundational Business Questions interview board.
 
-A bounded local discovery lane now uses relevant browser-history URLs and selected project folders to find research leads.
+### Improvement 15 — Authoritative Unified CLI
+* **Problem**: Operations were fragmented across disparate scripts in `src/scripts/`.
+* **Solution**: Unified into [src/cli.py](file:///D:/ABANGCOLEK/src/cli.py) with subcommands: `doctor`, `rebuild`, `review`, `export-sql`, `sync-supabase`, and `status`.
 
-Important boundary:
+---
 
-```text
-LOCAL LEAD → LIVE JEV DISCOVERY → RECAPTURE ORIGINAL SOURCE → AUTHORITATIVE EVIDENCE
-```
+## 4. Audit & Revision Ledger
 
-Local discovery is never promoted directly into business truth. Legacy/provisional ABANGCOLEK reports are excluded to prevent circular reasoning.
-
-This lane found:
-
-- one previously missing TikTok URL
-- Instagram candidate `@abangcolek`
-- Instagram candidate/reseller `@jeruxsliurlelehterengganu`
-
-Those public sources were subsequently recaptured by normal collectors.
-
-## Improvement 6 — Media hallucination removed
-
-The media pipeline no longer invents transcripts, OCR, packaging details or visual descriptions when media bytes are unavailable.
-
-Missing media stays explicitly unavailable/pending.
-
-## Improvement 7 — Snapshot dedupe
-
-Repeated public captures are retained for forensic history but no longer inflate JEV/BI counts.
-
-Current deduplicated state:
-
-- 167 raw capture snapshots retained
-- 39 repeat snapshots suppressed from classification
-- 128 unique evidence items classified
-- 304 authoritative live-JEV decisions
-
-## Improvement 8 — Tests now protect truth, not fake richness
-
-Old expectations that required minimum comments, fixed business eras or fabricated media outputs were removed.
-
-Current tests validate:
-
-- provenance requirements
-- synthetic isolation
-- no-media/no-transcript behavior
-- JEV fail-closed behavior
-- evidence-linked graph relationships
-- zero-evidence state as valid
-- repeated snapshot deduplication
-
-Current suite: **33/33 PASS**.
-
-## Recovery commits
-
-- `3f21bb2` — forensic recovery: enforce real evidence and live JEV
-- `7fc8241` — no-key social backfill with mandatory live JEV
-- `0de5bda` — integrate local-PC discovery with live JEV and dedupe
-
-These commits form the current recovery lineage.
+| Version | Timestamp (MYT) | Author | Why | How | Validation |
+|---|---|---|---|---|---|
+| `4.2.0` | `2026-09-30 04:16:00` | Antigravity Sovereign Conductor | Documentation of post-audit Improvements 9 through 15 | Added detailed problem/solution/result breakdowns for AC fixes, Supabase, UI, and CLI | Pytest 53/53 passed; clean build run |
+| `4.0.0` | `2026-09-29 12:10:00` | Recovery Team | Initial recovery documentation | Documented improvements 1 through 8 | Pre-audit tests |

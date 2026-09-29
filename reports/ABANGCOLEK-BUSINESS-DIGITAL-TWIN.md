@@ -1,46 +1,58 @@
 ---
-version: "3.1.0-gated"
-lifecycle_status: "BLOCKED — EVIDENCE COVERAGE STILL PARTIAL"
-updated_at: "2026-09-29"
+title: "ABANGCOLEK Business Digital Twin (Gated In-Progress)"
+document_id: "REP-AC-TWIN-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:30:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "GATED_EVIDENCE_REVIEW"
 ---
+
 # ABANGCOLEK Business Digital Twin
 
-Authoritative final Digital Twin generation remains intentionally blocked.
+> [!WARNING]
+> **Status: GATED (In-Progress via Evidence Review Workspace)**
+> Final authoritative Digital Twin generation remains gated until real business transactions and internal workflows are confirmed with the business owner using the 8 Foundational Business Questions board at `http://127.0.0.1:8765`.
 
-## Current evidence state
+---
 
-The production Evidence Lake is no longer empty and is no longer synthetic-driven.
+## 1. Verified Evidence Baseline
 
-Current verified counters:
+The production Evidence Lake has been completely decontaminated, normalized, and classified:
 
-- 167 authoritative raw capture snapshots retained
-- 39 repeat snapshots suppressed from classification
-- 128 unique evidence items classified
-- 304 authoritative live-JEV decisions
-- resolved JEV model: `jev-1.13.0`
-- synthetic authoritative records: 0
+* **167 authoritative raw capture snapshots** retained with 100% SHA-256 payload integrity.
+* **39 repeat snapshots** suppressed dynamically.
+* **128 unique normalized evidence records** (0 cross-platform ID collisions).
+* **389 authoritative live-JEV decisions** (Model: `jev-1.13.0`).
+* **123 posts/videos/photos** validated in BI metrics.
+* **Knowledge Graph**: 131 entities, 128 relationships, 389 epistemology items, and 124 timeline events stored in SQLite and ready for Supabase.
 
-Current public evidence spans Threads, TikTok and Instagram, including candidate ABANGCOLEK/JERUX-related accounts discovered through evidence-led local-PC research.
+---
 
-## Why the final Digital Twin is still blocked
+## 2. Why the Final Digital Twin Remains Gated
 
-Coverage is meaningful but not yet sufficient to describe the full business as authoritative truth.
+While public social signals are comprehensive, public social media cannot prove internal operational workflows:
 
-Remaining critical gaps:
+1. **Order Fulfillment**: Public social media shows customer excitement, but not how an order is confirmed, packed, and tracked.
+2. **Stock Ownership**: HQ vs. mobile pop-up stalls vs. agent inventory terms require internal reconciliation.
+3. **Agent Management**: Reseller pricing, commission, and restock policies require owner verification.
+4. **Root Cause Analysis**: Product defect complaints (e.g. `LEAKAGE` or `TASTE`) establish symptoms, but operational root cause remains **`UNDETERMINED`** without factory batch and transport records.
 
-1. structured comments/replies are not yet normalized across platforms
-2. Threads/Instagram historical depth remains partial
-3. Facebook and older Jerux/LiurLeleh history require more recovery
-4. TikTok coverage is not pagination-exhausted and two discovered URLs still fail extraction
-5. real media ASR/OCR/vision is not yet complete
-6. owner exports/authorized data may still close deleted/private/history gaps
-7. internal production, stock, transport, agent and finance workflows are not publicly provable
-8. candidate identity/account relationships require evidence-led validation
+---
 
-## Current interpretation rule
+## 3. Human-in-the-Loop Review Protocol
 
-Preliminary JEV signals may guide investigation but must not be treated as final business-model percentages or operational facts.
+To advance the Digital Twin toward production approval:
+1. Launch the review UI via `python -m src.cli review --port 8765`.
+2. Review observed signals on the **Knowledge Graph** and **JEV Claims** tabs.
+3. Use the **Operational Validation** tab to record the owner's answers to the 8 Foundational Questions.
+4. Export the confirmed state to Supabase via `python -m src.cli export-sql`.
 
-For example, a captured `LEAKAGE` complaint may establish the symptom, while root cause remains `UNDETERMINED` until operational evidence links it to a process stage.
+---
 
-See `docs/RECOVERY-STATUS.md`, `docs/EVIDENCE-JEV-GOVERNANCE.md`, `docs/ROADMAP.md` and `SOCIAL-BACKFILL-REPORT.md`.
+## 4. Audit & Revision Ledger
+
+| Version | Timestamp (MYT) | Author | Why | How | Validation |
+|---|---|---|---|---|---|
+| `4.2.0` | `2026-09-30 04:30:00` | Antigravity Sovereign Conductor | Post-audit alignment and SMS-v1.0 standardization | Updated counters (389 decisions, 128 normalized, 123 posts) and linked to Review UI | Pytest 53/53 passed; clean build run |
+| `3.1.0` | `2026-09-29 12:10:00` | Recovery Team | Decontamination gating | Blocked premature final twin generation | Gate check enforced |

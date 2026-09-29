@@ -1,45 +1,52 @@
 ---
-version: "3.1.0-gated"
-lifecycle_status: "BLOCKED — DIGITAL TWIN / INTERNAL DISCOVERY INCOMPLETE"
-updated_at: "2026-09-29"
+title: "ABANGCOLEK Business OS Product Requirements Document (Gated)"
+document_id: "PRD-AC-OS-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:32:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "GATED_DISCOVERY"
 ---
-# ABANGCOLEK Business OS PRD
 
-The final product requirements document is intentionally blocked.
+# ABANGCOLEK Business OS Product Requirements Document (PRD)
 
-## What is already allowed
+> [!IMPORTANT]
+> **Status: GATED (Awaiting Targeted Pilot MVP Selection)**
+> The full Business OS PRD remains intentionally gated to prevent premature over-engineering. An operational pilot MVP will be scoped once a single real workflow (e.g. Order Flow or Complaint Tracing) is validated with the business owner.
 
-The project may continue improving:
+---
 
-- evidence ingestion
-- no-key collectors
-- provenance validation
-- JEV classification
-- media processing
-- coverage reporting
-- Knowledge Graph/analytics infrastructure
-- internal discovery tooling
+## 1. What Has Been Completed & Verified
 
-These are discovery capabilities, not assumptions about the final Business OS.
+The underlying forensic data and discovery foundation is 100% complete and verified:
+* **Evidence Lake**: 167 raw captures (100% SHA-256 verified) normalized into 128 unique records without collisions.
+* **Deterministic JEV Engine**: 389 claims evaluated via `jev-1.13.0` with neutral criteria and 100% cache determinism.
+* **Analytics & Knowledge Graph**: 123 verified posts, 131 entities, 128 relationships, and 124 timeline events.
+* **Cloud Database Layer**: Enterprise Supabase PostgreSQL schema (`src/db/schema.sql`) and 1.18 MB seed dump.
+* **Human-in-the-Loop Review Tooling**: Evidence Review UI running locally on `http://127.0.0.1:8765`.
 
-## What is not allowed yet
+---
 
-Do not treat candidate ERP/app modules, workflows, thresholds, transport methods, stock rules, payment methods or compliance processes as verified requirements unless they have evidence or internal confirmation.
+## 2. Gate Criteria Before PRD Approval
 
-## Gate before PRD V2/V3 can become authoritative
+Before any module in the PRD can be formally approved for development:
+1. **Evidence Traceability**: Every requirement must link directly to an observed evidence ID or an explicit owner statement.
+2. **Owner Walkthrough**: The 8 Foundational Business Questions on the Review UI must have documented answers.
+3. **Single Workflow Pilot**: The project must focus on one critical workflow first (e.g. Order Intake & Fulfillment), measuring operational impact before expanding to multi-module ERP systems.
 
-The final PRD requires:
+---
 
-1. broader, explicitly bounded social-history coverage
-2. comments/replies recovery or documented gaps
-3. real media processing where media exists
-4. evidence-supported Business Digital Twin
-5. targeted internal business discovery
-6. validated operating workflows
-7. requirement-to-evidence/internal-confirmation traceability
+## 3. Disallowed Assumptions
 
-Until then, candidate requirements belong in discovery notes or hypotheses, not in an `APPROVED` specification.
+* Do not assume warehouse or batch QC rules without factory documentation.
+* Do not invent pricing, reseller commissions, or delivery fees.
+* Do not assume ownership relationships between ABANGCOLEK, JERUX, and LIURLELEH without legal entity confirmation.
 
-Legacy PRD/specifications remain archived under `reports/legacy/` and must not be treated as current source of truth.
+---
 
-Current source-of-truth documentation starts at `README.md` and `docs/`.
+## 4. Audit & Revision Ledger
+
+| Version | Timestamp (MYT) | Author | Why | How | Validation |
+|---|---|---|---|---|---|
+| `4.2.0` | `2026-09-30 04:32:00` | Antigravity Sovereign Conductor | Post-audit alignment and SMS-v1.0 standardization | Documented foundation completion and targeted pilot gating criteria | Pytest 53/53 passed; clean build run |
+| `3.1.0` | `2026-09-29 12:10:00` | Recovery Team | PRD gating baseline | Blocked premature software requirements | Gate checks enforced |

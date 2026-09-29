@@ -1,7 +1,37 @@
+---
+title: "ABANGCOLEK Review Synthesis, Audit Findings & Resolution Ledger"
+document_id: "DOC-AC-SYNTHESIS-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:20:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "RESOLVED_ACTIVE"
+---
+
 # ABANGCOLEK — Sintesis Projek dan Cadangan Penambahbaikan
-Tarikh review: 29 September 2026 (Asia/Kuala_Lumpur)
-Lokasi: D:\ABANGCOLEK | Peranti: NIAGA-HUB | Baseline Git: master @ 73ae98d
-Status cadangan: baiki integriti dan penyelarasan data sebelum memperluas automasi atau meluluskan PRD.
+Tarikh review asal: 29 September 2026 (Asia/Kuala_Lumpur)
+Tarikh penyelesaian & pengesahan: 30 September 2026
+Lokasi: D:\ABANGCOLEK | Peranti: NIAGA-HUB | Baseline Git: main @ 3f2391d
+Status terkini: **SEMUA 16 ISU AUDIT (AC-01 HINGGA AC-16) TELAH DISELESAIKAN & DIUJI (53/53 PASSED)**
+
+> [!NOTE]
+> **Ringkasan Resolusi Audit (30 September 2026):**
+> * **AC-01 (Integriti Bukti)**: Diperkukuh dalam `integrity.py`.
+> * **AC-02 (ID Collision)**: Diselesaikan dengan `identity.py` (128 fail normalized unik).
+> * **AC-03 (Kiraan Post BI)**: Diselesaikan dengan `record_kind.py` (tepat 123 posts).
+> * **AC-04 & AC-12 (JEV Model & Cache)**: Dipin ke `jev-1.13.0` (100% cache replay deterministik).
+> * **AC-05 & AC-08 (Atomic Run & Gate)**: Dilaksanakan dalam `rebuild_pipeline.py` (12/12 validation checks PASS).
+> * **AC-06 (Windows CRLF Hash)**: Disahkan padan dengan normalisasi teks kanonikal.
+> * **AC-07 (Owner Export)**: Normalizer dikemaskini tanpa mendakwa liputan palsu.
+> * **AC-09 (Capture Usability)**: Tapisan capture tidak boleh guna diaktifkan sebelum JEV.
+> * **AC-10 (Link Parsers)**: Regex URL kanonikal tanpa handle diselaraskan.
+> * **AC-11 (Taxonomy UNKNOWN)**: Lengkap dan neutral dalam `taxonomy.py`.
+> * **AC-13 (Graph Evidence Foreign Keys)**: Knowledge Graph terisi penuh (131 entiti, 128 relasi, 389 epistemologi).
+> * **AC-14 (Canonical Models)**: QC status PENDING & metrik `None` sebagai lalai selamat.
+> * **AC-15 (Setup & CLI)**: `pyproject.toml` ditambah dan disatukan di bawah `src/cli.py`.
+> * **AC-16 (Workspace & Ujian)**: 53 ujian lulus + Discovery Workspace UI aktif di port 8765.
+
+---
 
 ## 1. Kesimpulan utama
 

@@ -1,48 +1,68 @@
-# Social Data Access Setup
+---
+title: "ABANGCOLEK Social & Cloud Data Access Configuration"
+document_id: "DOC-AC-AUTH-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:26:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "ACTIVE"
+---
 
-## Position in the current architecture
+# Social & Cloud Data Access Configuration
 
-Owner-authorized APIs are **optional enrichment**, not a hard dependency for ABANGCOLEK public discovery.
+## 1. Architectural Position
 
-The project can already collect public evidence through no-key lanes. Authorization/export data is still valuable for scopes the public lane cannot prove, especially deleted/private history, full comments/replies, insights and account-native historical completeness.
+Owner-authorized social APIs and cloud credentials are **optional enrichment**, not a hard blocker for ABANGCOLEK public discovery.
 
-Do not paste tokens into chat, source code, reports or logs.
+The system is fully capable of running public ingestion, normalization, JEV evaluation, and Knowledge Graph construction via no-key collectors. Authorized access and owner exports are reserved for private scopes (deleted posts, direct customer messages, internal financial receipts, and platform analytics).
 
-## Environment variables
+> [!WARNING]
+> Never commit, print, or leak raw API keys, bearer tokens, or database passwords into chat, source code, git commits, or reports.
 
-Use `C:\Users\megat\.env` or equivalent environment variables.
+---
 
-Optional platform enrichment:
+## 2. Environment Configuration
 
-- Threads: `THREADS_ACCESS_TOKEN` or `META_THREADS_ACCESS_TOKEN`
-- TikTok: `TIKTOK_ACCESS_TOKEN` or `TIKTOK_DISPLAY_ACCESS_TOKEN`
-- Instagram Professional: `INSTAGRAM_ACCESS_TOKEN` and optional `INSTAGRAM_USER_ID`
-- Facebook Pages: `FACEBOOK_USER_ACCESS_TOKEN` or `META_USER_ACCESS_TOKEN`
+Variables are managed securely via `C:\Users\megat\.env` or operating system environment variables:
 
-Required for authoritative structured interpretation:
+### Core Required Credentials
+* `TYPESAFE_API_KEY`: Required for live System-1 JEV evaluations (`jev-1.13.0`).
 
-- TypeSafe JEV: `TYPESAFE_API_KEY`
+### Cloud Database Credentials (Supabase)
+* `SUPABASE_URL`: Supabase project endpoint (e.g. `https://gcpyatuhoxrwbuljvleo.supabase.co`).
+* `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_ANON_KEY`: Required for automated PostgREST sync (`python -m src.cli sync-supabase`).
+* *Note*: If environment variables are omitted, offline SQL seed export is always available via `python -m src.cli export-sql`.
 
-## Owner exports
+### Optional Social Platform Enrichment
+* **Threads**: `THREADS_ACCESS_TOKEN`
+* **TikTok**: `TIKTOK_ACCESS_TOKEN` / `TIKTOK_DISPLAY_ACCESS_TOKEN`
+* **Instagram Professional**: `INSTAGRAM_ACCESS_TOKEN` & `INSTAGRAM_USER_ID`
+* **Facebook Pages**: `FACEBOOK_USER_ACCESS_TOKEN`
 
-Place owner-downloaded ZIP/JSON exports in:
+---
 
-`D:\ABANGCOLEK\data\owner_exports\inbox\`
+## 3. Owner Exports Inbox
 
-Where possible, include the platform name in the filename (`tiktok`, `threads`, `instagram`, `facebook`) so the importer can route it correctly.
+Direct owner-exported data (ZIP/JSON archives) should be deposited into:
+```text
+D:\ABANGCOLEK\data\owner_exports\inbox\
+```
 
-Owner-export files are hashed and preserved as first-party evidence. They must not be merged invisibly with public data; their origin remains explicit.
+The importer routes and hashes these files as immutable first-party evidence, mapping post captions, comments, and replies into canonical records.
 
-## Access safety
+---
 
-Never use:
+## 4. Access Safety Rules
 
-- CAPTCHA bypass
-- stolen/decrypted cookies
-- login circumvention
-- IP/rate-limit evasion
-- private data without owner authorization
+* Zero CAPTCHA bypass, stolen cookies, or session hijacking.
+* Zero rate-limit evasion or unauthenticated private scraping.
+* Any source blocked by platform access limitations is explicitly recorded as a coverage gap in the manifest.
 
-A blocked source stays blocked and must appear as a coverage gap in `data\coverage\collection_manifest.json`.
+---
 
-See `NO-KEY-SOCIAL-COLLECTION.md` for the public collection architecture.
+## 5. Audit & Revision Ledger
+
+| Version | Timestamp (MYT) | Author | Why | How | Validation |
+|---|---|---|---|---|---|
+| `4.2.0` | `2026-09-30 04:26:00` | Antigravity Sovereign Conductor | Post-audit alignment and Supabase credential documentation | Added Supabase env section and SMS-v1.0 frontmatter | CLI doctor check; clean env parse |
+| `4.0.0` | `2026-09-29 12:10:00` | Recovery Team | Social auth governance baseline | Documented environment variable definitions | Variable check |

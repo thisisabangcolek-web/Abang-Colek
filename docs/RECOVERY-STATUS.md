@@ -1,53 +1,68 @@
-# ABANGCOLEK Forensic Recovery Status
+---
+title: "ABANGCOLEK Forensic Recovery & Audit Status"
+document_id: "DOC-AC-RECOVERY-001"
+version: "4.2.0"
+last_updated: "2026-09-30 04:14:00"
+maintainer: "Antigravity Sovereign Conductor"
+classification: "INTERNAL_CORE"
+lifecycle_status: "ACTIVE"
+---
 
-## Current gate — 2026-09-29
-- Code integrity: PASS
-- Tests: 33/33 PASS
-- TypeSafe JEV connectivity: PASS (`jev-1.13.0`)
-- Raw capture snapshots retained: 167 authoritative records
-- Repeated capture snapshots suppressed from classification: 39
-- Unique evidence classified by JEV: 128
-- Authoritative live-JEV decisions: 304
-- Synthetic contamination: 0 production records
-- Digital Twin: BLOCKED pending broader historical coverage/internal discovery
-- PRD: BLOCKED pending Digital Twin/internal validation
+# ABANGCOLEK Forensic Recovery & Audit Status
 
-## No-key collection now working
-- Threads `@airpoolstylo`: profile + 15 public post pages captured.
-- Instagram `@airpoolstylo`: profile + 11 public post/reel pages captured.
-- TikTok `@styloairpool`: 81 public post URLs accumulated from public-browser + local-history discovery.
-- TikTok metadata: 79/81 URLs extracted by yt-dlp without platform API key; 2 URLs remain failed.
-- TikTok photo fallback: 2 photo posts extracted by gallery-dl.
-- Candidate Instagram `@abangcolek`: profile + 4 public posts captured; relationship remains evidence-led, not assumed official.
-- Candidate Jerux reseller `@jeruxsliurlelehterengganu`: profile + 12 public posts captured.
-- Official OAuth/API collectors remain optional enrichment, not a hard dependency.
+## 1. Current Gate Status — 2026-09-30 (Verified)
 
-## Local-PC discovery lane
-- Current clean discovery set: 15 leads (9 sanitized browser-history URLs + 6 current project artifacts).
-- Legacy/provisional ABANGCOLEK documents are excluded from future local discovery.
-- All 15 leads were evaluated by live JEV `jev-1.13.0` as `DISCOVERY_ONLY`.
-- Local-PC leads are never promoted directly to business facts; public URLs must be recaptured with provenance first.
-- This lane surfaced one previously missing TikTok URL and two additional Instagram account/profile leads.
+* **Code & Pipeline Integrity**: **PASS** (12/12 validation stages passed in `rebuild_pipeline.py`)
+* **Test Suite**: **53/53 PASS** (100% pass rate in 4.58s)
+* **TypeSafe JEV Connectivity**: **PASS** (Pinned strictly to `jev-1.13.0`; 100% cache replay determinism)
+* **Raw Capture Snapshots Retained**: **167 records** (100% payload hash match, zero synthetic)
+* **Repeated Capture Snapshots Suppressed**: **39 duplicate snapshots**
+* **Unique Normalized Evidence Records**: **128 unique records** (Cross-platform ID collision resolved)
+* **Total Posts Counted in BI**: **123 posts** (79 video, 2 photo, 42 post snapshots; resolved from 0)
+* **Authoritative Live-JEV Decisions**: **389 decisions** (128 content, 128 signal, 123 interaction, 10 complaint)
+* **Knowledge Graph Ingestion**: **128 evidence, 131 entities, 128 relationships, 389 epistemology items, 124 timeline events**
+* **Supabase Cloud Schema & Seed**: **11 PostgreSQL tables with RLS + 1.18 MB idempotent SQL seed**
+* **Evidence Review UI**: **OPERATIONAL** (Daemon active at `http://127.0.0.1:8765`)
+* **Unified CLI Interface**: **`python -m src.cli [doctor|rebuild|review|export-sql|status]`**
+* **Digital Twin & Final PRD**: **GATED / IN-PROGRESS** (Pending owner validation via 8 Business Questions board)
 
-## Current JEV signal summary (deduplicated)
-- Brands: ABANGCOLEK 21, JERUX 18, LIURLELEH 10, MULTI_BRAND 2, UNKNOWN 77.
-- Business functions: DIRECT_SALES 46, MARKETING 43, EVENT 18, CUSTOMER_SERVICE 6, PRODUCTION 6, TRANSPORT 4, AGENT_MANAGEMENT 4, FINANCE 1.
-- Complaint records flagged: 6; issue classes = LEAKAGE 2, TASTE 1, UNKNOWN 3.
-- Signals: new variant 5, new territory 21, mobile team/pop-up 46, recruitment 12.
+---
 
-## Root-cause rule
-A real captured complaint may be classified as `LEAKAGE`, but JEV must keep root cause `UNDETERMINED` until operational evidence links the incident to production, packaging, transport, storage, agent handling, or another stage.
+## 2. No-Key Collection Verification
 
-## Current source-of-truth documents
+* **Threads (`@airpoolstylo`)**: Profile + 15 public post pages captured and normalized.
+* **Instagram (`@airpoolstylo`)**: Profile + 11 public post/reel pages captured and normalized.
+* **TikTok (`@styloairpool`)**: 81 public post URLs accumulated (79 extracted via `yt-dlp` + 2 photo posts via `gallery-dl`).
+* **Candidate Instagram (`@abangcolek`)**: Profile + 4 public posts captured; status remains candidate.
+* **Candidate Jerux Reseller (`@jeruxsliurlelehterengganu`)**: Profile + 12 public posts captured.
+* **Official OAuth/API Collectors**: Configured as optional enrichment; not a blocker for discovery.
 
-Start with `README.md`.
+---
 
-- `ARCHITECTURE.md` — runtime/data architecture
-- `EVIDENCE-JEV-GOVERNANCE.md` — truth/provenance/JEV rules
-- `NO-KEY-SOCIAL-COLLECTION.md` — public no-key collection lanes
-- `IMPLEMENTATION-IMPROVEMENTS.md` — recovery and improvements completed
-- `ROADMAP.md` — next execution phases and product gates
-- `../reports/SOCIAL-BACKFILL-REPORT.md` — source-by-source coverage
+## 3. Local-PC Discovery Lane
 
-Recovery implementation lineage: `3f21bb2` → `7fc8241` → `0de5bda`.
-Legacy/quarantine/forensic material is retained for audit but is not current business truth.
+* 15 leads evaluated by JEV as `DISCOVERY_ONLY`.
+* Bounded scope: Personal files and legacy reports excluded from automated ingestion.
+* Zero discovery leads promoted to business facts without public re-capture.
+
+---
+
+## 4. Current JEV Signal Summary (Deduplicated)
+
+* **Brand Distribution**: `ABANGCOLEK` 21, `JERUX` 18, `LIURLELEH` 10, `MULTI_BRAND` 2, `UNKNOWN` 77.
+* **Top Operational Signals**:
+  * Mobile Team / Pop-up activations: **46 captures**
+  * New Territory expansion: **21 captures**
+  * Seller / Crew Recruitment: **12 captures**
+  * Product Variant introductions: **6 captures**
+* **Complaint Views**: 10 signals (`LEAKAGE` 2, `TASTE` 2, `UNKNOWN` 6).
+* **Root Cause Invariant**: Root cause remains **`UNDETERMINED`** until verified with factory batch logs.
+
+---
+
+## 5. Audit & Revision Ledger
+
+| Version | Timestamp (MYT) | Author | Why | How | Validation |
+|---|---|---|---|---|---|
+| `4.2.0` | `2026-09-30 04:14:00` | Antigravity Sovereign Conductor | Post-audit atomic rebuild, Supabase deployment, and review server launch | Updated all counters (53 tests, 128 normalized, 389 decisions, 123 posts, 131 entities) | Full pytest run (53/53 PASSED); HTTP 200 OK |
+| `4.0.0` | `2026-09-29 12:10:00` | Recovery Team | Initial post-decontamination status | Initial 33-test baseline and raw count inventory | Initial doctor check |

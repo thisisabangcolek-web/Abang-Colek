@@ -1,0 +1,99 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at": "2026-09-29T04:06:27.008649+00:00",
+  "total_sources": 4,
+  "sources": [
+    {
+      "platform": "threads",
+      "account": "@airpoolstylo",
+      "source_name": "@airpoolstylo",
+      "status": "BLOCKED_AUTH",
+      "record_count": 0,
+      "data_origin": "OWNER_AUTHORIZED_API",
+      "posts_recovered": 0,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "All owner-authorized Threads history",
+        "Replies and insights"
+      ],
+      "notes": "THREADS_ACCESS_TOKEN/META_THREADS_ACCESS_TOKEN missing",
+      "last_updated": "2026-09-29T04:06:27.001957+00:00"
+    },
+    {
+      "platform": "tiktok",
+      "account": "@styloairpool",
+      "source_name": "@styloairpool",
+      "status": "BLOCKED_AUTH",
+      "record_count": 0,
+      "data_origin": "OWNER_AUTHORIZED_API",
+      "posts_recovered": 0,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Authorized video history",
+        "Profile metadata",
+        "Comments are not exposed by Display API",
+        "Owner export required for lifetime/deleted data"
+      ],
+      "notes": "TIKTOK_ACCESS_TOKEN/TIKTOK_DISPLAY_ACCESS_TOKEN missing",
+      "last_updated": "2026-09-29T04:06:27.003510+00:00"
+    },
+    {
+      "platform": "instagram",
+      "account": "instagram professional account",
+      "source_name": "instagram professional account",
+      "status": "BLOCKED_AUTH",
+      "record_count": 0,
+      "data_origin": "OWNER_AUTHORIZED_API",
+      "posts_recovered": 0,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Professional account media",
+        "Comments/replies",
+        "Profile metadata"
+      ],
+      "notes": "INSTAGRAM_ACCESS_TOKEN/META_USER_ACCESS_TOKEN missing",
+      "last_updated": "2026-09-29T04:06:27.006016+00:00"
+    },
+    {
+      "platform": "facebook",
+      "account": "managed pages",
+      "source_name": "managed pages",
+      "status": "BLOCKED_AUTH",
+      "record_count": 0,
+      "data_origin": "OWNER_AUTHORIZED_API",
+      "posts_recovered": 0,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Managed Pages",
+        "Page posts",
+        "Comments/replies"
+      ],
+      "notes": "FACEBOOK_USER_ACCESS_TOKEN/META_USER_ACCESS_TOKEN missing",
+      "last_updated": "2026-09-29T04:06:27.008649+00:00"
+    }
+  ]
+}

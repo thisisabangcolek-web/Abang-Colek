@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+.DS_Store
+# Raw/private evidence and secrets stay local
+data/raw/
+data/owner_exports/
+data/quarantine/
+forensic_archive/
+# Derived caches/databases are reproducible
+data/jev_cache*.json
+data/jev/*.json
+data/analytics/*.json
+data/knowledge/*.db
+data/media_processed*.json
+
+# Archived pre-recovery material
+docs/legacy/
+reports/legacy/

@@ -37,3 +37,17 @@
 
 ## Root-cause rule
 A real captured complaint may be classified as `LEAKAGE`, but JEV must keep root cause `UNDETERMINED` until operational evidence links the incident to production, packaging, transport, storage, agent handling, or another stage.
+
+## Current source-of-truth documents
+
+Start with `README.md`.
+
+- `ARCHITECTURE.md` — runtime/data architecture
+- `EVIDENCE-JEV-GOVERNANCE.md` — truth/provenance/JEV rules
+- `NO-KEY-SOCIAL-COLLECTION.md` — public no-key collection lanes
+- `IMPLEMENTATION-IMPROVEMENTS.md` — recovery and improvements completed
+- `ROADMAP.md` — next execution phases and product gates
+- `../reports/SOCIAL-BACKFILL-REPORT.md` — source-by-source coverage
+
+Recovery implementation lineage: `3f21bb2` → `7fc8241` → `0de5bda`.
+Legacy/quarantine/forensic material is retained for audit but is not current business truth.

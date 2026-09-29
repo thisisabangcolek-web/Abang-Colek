@@ -1,57 +1,75 @@
 # ABANGCOLEK No-Key Social Collection Architecture
 
 ## Principle
-Official platform APIs are optional enrichment. The primary discovery system must recover the maximum legitimate public/owner-controlled history without requiring paid API access or fabricated data.
 
-## Lane A — Public JS Browser
+Official platform APIs are optional enrichment. Public business discovery must be able to recover legitimate public history without requiring paid/platform API keys and without fabricating replacement data.
+
+“No-key” does not mean bypassing access controls. CAPTCHA bypass, stolen/decrypted cookies, login circumvention, IP/rate-limit evasion and unauthorized private-data access are not part of this architecture.
+
+## Lane A — Public JS browser
+
 `src/collectors/browser_public_adapter.py`
 
-Uses real Chromium + Playwright to render public profiles and posts exactly as a normal anonymous browser receives them.
+Uses Chromium + Playwright to capture public JS-rendered profile/post pages. Each authoritative capture preserves source URL, final URL, HTTP status, visible text, page metadata, capture timestamp and HTML SHA-256.
 
 Current proven targets:
+
 - Threads `@airpoolstylo`
 - Instagram `@airpoolstylo`
 - TikTok `@styloairpool`
+- Instagram candidate `@abangcolek`
+- Instagram candidate/reseller `@jeruxsliurlelehterengganu`
 
-It records source URL, final URL, HTTP status, timestamp, visible text, page metadata, HTML SHA-256 and a local HTML snapshot. It never exports cookies, local storage, authorization tokens or browser credentials.
+The collector does not export cookies, local storage or browser authorization secrets into the Evidence Lake.
 
-## Lane B — Public Extractor Tools
-TikTok URL discovery is separated from metadata extraction.
+## Lane B — Public extractor tools
 
-- Browser discovers public TikTok video/photo URLs.
-- `tiktok_ytdlp_adapter.py` extracts stable video metadata with yt-dlp.
-- `tiktok_gallery_adapter.py` handles photo posts unsupported by yt-dlp.
+TikTok URL discovery and metadata extraction are separated.
+
+- Browser discovery accumulates public video/photo URLs.
+- `tiktok_ytdlp_adapter.py` extracts stable metadata with `yt-dlp`.
+- `tiktok_gallery_adapter.py` handles public photo posts not covered by the video extractor.
 - Signed CDN URLs, request headers and volatile download formats are excluded from authoritative metadata.
 
-## Lane C — Owner-Controlled Browser Session
-Hermes-WebApp already contains browser automation patterns and Agent-Reach integration. OpenCLI 1.8.8 is installed locally and is designed to operate a logged-in Chrome session without requiring platform API keys.
+Current verified TikTok checkpoint:
 
-Use this lane only when public browsing cannot expose enough history. The browser remains under the owner's control. Do not export/decrypt cookies or copy session tokens into ABANGCOLEK.
+- 81 public URLs accumulated
+- 79/81 successfully extracted by `yt-dlp`
+- 2 URLs remain failed
+- 2 photo posts handled by `gallery-dl`
+- earliest recovered TikTok metadata currently reaches 2025-11-02
 
-Current state:
-- OpenCLI installed.
-- OpenCLI Browser Bridge extension is not connected yet.
-- GangNiaga WebBridge port 10087 is currently offline.
-- CDP ports checked during recovery were not active.
+## Lane C — Local-PC discovery
 
-## Lane D — Public Archive / Search Recovery
-For older/deleted public traces, use public search indexes, Jina Reader, Wayback/Common Crawl or equivalent archives where available. Archive evidence must retain archived URL/snapshot date and must never be presented as current state without temporal qualification.
+`src/scripts/local_pc_discovery.py` searches a bounded set of relevant local signals: sanitized browser-history URLs and selected project folders.
 
-## Evidence rule
-Every authoritative record needs actual capture proof. No collector may replace inaccessible content with generated captions, representative comments, guessed metrics or synthetic transcripts.
+The output is `DISCOVERY_ONLY`. Live JEV may classify these leads, but they remain `authoritative_for_business_truth=false` until an original public source is recaptured by a normal collector.
+
+## Lane D — Owner data and optional APIs
+
+Owner exports and official APIs remain useful for scopes public collection cannot prove: deleted/private history, insights, full replies, profile metadata and platform-native historical completeness.
+
+See `SOCIAL-AUTH-SETUP.md`. These integrations are optional enrichment, not a requirement for the no-key public lane to operate.
+
+## Lane E — Archive/search recovery
+
+Planned recovery for older/deleted public traces includes search indexes and public web archives. Archive evidence must retain archived URL and snapshot date and must be described as historical evidence, not current state.
+
+## Mandatory live JEV gate
+
+Every provenance-valid unique evidence item is classified through TypeSafe JEV before contributing to authoritative BI.
+
+Current invariant:
+
+```text
+decision_engine = TYPESAFE_JEV
+authoritative = true
+fallback = rejected for authoritative discovery
+root cause = UNDETERMINED without operational proof
+```
+
+Current verified state: 167 raw capture snapshots retained; 39 repeat snapshots suppressed; 128 unique evidence items processed; 304 authoritative decisions resolved with `jev-1.13.0`.
 
 ## Completion rule
-"Complete" means complete within a clearly stated source scope. Deleted/private/unexposed history remains a documented coverage gap until owner exports or an owner-controlled session legitimately closes it.
 
-## Mandatory Live JEV Gate
-Every provenance-valid raw record is normalized and classified by TypeSafe JEV before it can contribute to authoritative BI or the Business Digital Twin.
-
-Current implementation:
-- `src/jev/batch_runner.py` reads only authoritative production evidence.
-- One bundled System One call evaluates each evidence item across content, customer intent, complaint, issue, channel and business-signal dimensions.
-- The response is split into compatible `content`, `business_signal`, `interaction` and `complaint` decision views without additional JEV calls.
-- Live model/fallback invariant: `decision_engine=TYPESAFE_JEV`, `authoritative=true`; deterministic fallback is rejected for authoritative discovery.
-- Root cause remains `UNDETERMINED` unless separate operational evidence proves it.
-
-Verified 2026-09-29: 113 authoritative raw records produced 258 decisions, all resolved by `jev-1.13.0`.
-
+A source is only “complete” within the scope actually exhausted. Public crawling cannot prove deleted/private lifetime history. Coverage gaps remain explicit until a stronger source legitimately closes them.

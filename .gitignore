@@ -29,3 +29,7 @@ data/coverage/checkpoints/
 data/coverage/discovery/
 data/local_discovery/
 data/normalized_v2/
+data/normalized_v4/
+data/runs/
+data/workspace_active/
+data/active_run.json

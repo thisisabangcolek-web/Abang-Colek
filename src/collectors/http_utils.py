@@ -1,16 +1,23 @@
-﻿"""Small HTTP helper for official social APIs. Never logs or persists bearer tokens."""
+"""Small HTTP helper for official social APIs. Never logs or persists bearer tokens."""
 from __future__ import annotations
 import hashlib, json, os, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+from src.config import PROJECT_ROOT
 
-def load_env_file(path:Path=Path('C:/Users/megat/.env'))->None:
-    if not path.exists(): return
-    for line in path.read_text(encoding='utf-8').splitlines():
-        line=line.strip()
-        if not line or line.startswith('#') or '=' not in line: continue
-        k,v=line.split('=',1); os.environ.setdefault(k.strip(),v.strip().strip('"').strip("'"))
+def load_env_file(path:Optional[Path]=None)->None:
+    paths=[Path(path)] if path else [PROJECT_ROOT/'.env',Path.home()/'.env']
+    for candidate in paths:
+        if not candidate.exists():
+            continue
+        for line in candidate.read_text(encoding='utf-8').splitlines():
+            line=line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            k,v=line.split('=',1)
+            os.environ.setdefault(k.strip(),v.strip().strip('\"').strip("'"))
+
 
 def request_json(method:str,url:str,*,token:Optional[str]=None,payload:Optional[Dict[str,Any]]=None,params:Optional[Dict[str,Any]]=None,timeout:int=30)->Tuple[Dict[str,Any],Dict[str,Any]]:
     if params:

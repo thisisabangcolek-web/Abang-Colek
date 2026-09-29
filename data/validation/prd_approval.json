@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "approved": false,
+  "approved_by": null,
+  "approved_at": null,
+  "scope": null,
+  "notes": "Final PRD requires explicit human approval after validated workflow evidence."
+}

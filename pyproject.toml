@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "abangcolek-intelligence"
+version = "0.4.0"
+description = "Evidence-first business discovery and JEV intelligence pipeline"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "pydantic==2.13.5",
+  "playwright==1.48.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.2.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

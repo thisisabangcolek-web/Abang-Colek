@@ -1,4 +1,4 @@
-﻿"""No-key public social collector using a real JS browser.
+"""No-key public social collector using a real JS browser.
 
 Captures public pages only. It never exports cookies, tokens, local/session storage,
 or bypasses login/CAPTCHA/rate-limit controls. Authenticated owner-browser lanes can
@@ -18,6 +18,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 from playwright.async_api import Browser, BrowserContext, Page, Response, async_playwright
 
+from src.config import DATA_DIR, RAW_DIR
 from src.collectors.base import BaseCollector
 from src.collectors.coverage_tracker import CoverageStatus, CoverageTracker
 
@@ -57,10 +58,10 @@ class PublicBrowserCollector:
         headless: bool = True,
     ) -> None:
         self.collector = BaseCollector(
-            storage_dir=storage_dir or Path("D:/ABANGCOLEK/data/raw"),
+            storage_dir=storage_dir or RAW_DIR,
             collector_name=self.COLLECTOR_NAME,
         )
-        self.snapshot_dir = Path(snapshot_dir or "D:/ABANGCOLEK/data/browser_snapshots")
+        self.snapshot_dir = Path(snapshot_dir or DATA_DIR / "browser_snapshots")
         self.snapshot_dir.mkdir(parents=True, exist_ok=True)
         self.coverage = coverage or CoverageTracker()
         self.headless = headless
@@ -144,12 +145,14 @@ class PublicBrowserCollector:
         except Exception:
             pass
 
-        html_hash = _sha256_text(html)
+        html_bytes = html.encode("utf-8", errors="replace")
+        html_hash = hashlib.sha256(html_bytes).hexdigest()
+        canonical_html_hash = _sha256_text(html.replace("\r\n", "\n").replace("\r", "\n"))
         snap_dir = self.snapshot_dir / platform
         snap_dir.mkdir(parents=True, exist_ok=True)
         snapshot_path = snap_dir / f"{html_hash}.html"
         if html and not snapshot_path.exists():
-            snapshot_path.write_text(html, encoding="utf-8", errors="replace")
+            snapshot_path.write_bytes(html_bytes)
 
         return {
             "requested_url": source_url,
@@ -160,6 +163,9 @@ class PublicBrowserCollector:
             "time_elements": times,
             "meta": metas,
             "html_sha256": html_hash,
+            "html_bytes_sha256": html_hash,
+            "html_canonical_text_sha256": canonical_html_hash,
+            "html_canonicalization_version": "lf-v1",
             "html_snapshot": str(snapshot_path) if html else None,
             "captured_at": _now(),
         }
@@ -194,11 +200,18 @@ class PublicBrowserCollector:
             "final_url": final_url,
             "http_status": status,
             "html_sha256": snapshot.get("html_sha256"),
+            "html_bytes_sha256": snapshot.get("html_bytes_sha256"),
+            "html_canonical_text_sha256": snapshot.get("html_canonical_text_sha256"),
+            "html_canonicalization_version": snapshot.get("html_canonicalization_version"),
             "browser": "system-chromium",
             "credentials_exported": False,
         }
+        block_reason = self._challenge_or_blocked(snapshot, status)
         payload = {
             **snapshot,
+            "capture_state": "BLOCKED_CHALLENGE" if block_reason else "CAPTURED",
+            "usable_for_business_interpretation": block_reason is None,
+            "block_reason": block_reason,
             "data_origin": "PUBLIC_PLATFORM",
             "evidence_class": "RAW_EVIDENCE",
             "synthetic": False,
@@ -225,20 +238,29 @@ class PublicBrowserCollector:
 
     @staticmethod
     def _extract_post_links(platform: str, links: Iterable[str], handle: str) -> List[str]:
+        """Extract canonical post URLs without assuming every platform embeds the handle in the path."""
         out: List[str] = []
-        h = re.escape(handle.lstrip("@"))
-        patterns = {
-            "threads": re.compile(rf"https://www\.threads\.(?:com|net)/@{h}/post/[^/?#]+", re.I),
-            "instagram": re.compile(rf"https://www\.instagram\.com/{h}/(?:p|reel)/[^/?#]+", re.I),
-            "tiktok": re.compile(rf"https://www\.tiktok\.com/@{h}/(?:video|photo)/\d+", re.I),
-            "facebook": re.compile(r"https://www\.facebook\.com/.+/(?:posts|videos|reel)/[^?#]+", re.I),
-        }
-        pat = patterns.get(platform)
-        if not pat:
-            return []
+        wanted = handle.lstrip("@").lower()
         for url in links:
             canonical = _canonical_url(url)
-            if pat.search(canonical):
+            try:
+                parts = urlsplit(canonical)
+                seg = [x for x in parts.path.split("/") if x]
+            except Exception:
+                continue
+            host = parts.netloc.lower()
+            if platform == "threads" and host.endswith("threads.com") and len(seg) >= 3 and seg[0].lower() == f"@{wanted}" and seg[1].lower() == "post":
+                out.append(canonical)
+            elif platform == "instagram" and host.endswith("instagram.com"):
+                # Current Instagram public links are commonly /p/<id>/ or /reel/<id>/;
+                # older/embedded forms may include the handle prefix.
+                if len(seg) >= 2 and seg[0].lower() in {"p", "reel"}:
+                    out.append(canonical)
+                elif len(seg) >= 3 and seg[0].lower() == wanted and seg[1].lower() in {"p", "reel"}:
+                    out.append(canonical)
+            elif platform == "tiktok" and host.endswith("tiktok.com") and len(seg) >= 3 and seg[0].lower() == f"@{wanted}" and seg[1].lower() in {"video", "photo"} and seg[2].isdigit():
+                out.append(canonical)
+            elif platform == "facebook" and host.endswith("facebook.com") and any(x.lower() in {"posts", "videos", "reel"} for x in seg):
                 out.append(canonical)
         return list(dict.fromkeys(out))
 
@@ -295,7 +317,7 @@ class PublicBrowserCollector:
                     break
 
             ordered = sorted(discovered)
-            discovery_dir = Path("D:/ABANGCOLEK/data/coverage/discovery")
+            discovery_dir = DATA_DIR / "coverage" / "discovery"
             discovery_dir.mkdir(parents=True, exist_ok=True)
             discovery_path = discovery_dir / f"{platform}_{handle.lstrip('@')}_public_urls.json"
             prior_urls: Set[str] = set()

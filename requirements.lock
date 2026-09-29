@@ -1,0 +1,8 @@
+# Reproducible Python dependency baseline captured 2026-09-29
+pydantic==2.13.5
+playwright==1.48.0
+pytest==8.2.0
+
+# External no-key collector executables (validated by doctor, not pip-installed here):
+# yt-dlp 2026.07.04
+# gallery-dl 1.32.14

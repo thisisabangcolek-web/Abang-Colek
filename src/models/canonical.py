@@ -59,10 +59,10 @@ class SocialAccount(BaseCanonicalModel):
     handle: Optional[str] = None
     display_name: Optional[str] = None
     bio: Optional[str] = None
-    followers: int = 0
-    followers_count: int = 0
-    following_count: int = 0
-    is_verified: bool = False
+    followers: Optional[int] = None
+    followers_count: Optional[int] = None
+    following_count: Optional[int] = None
+    is_verified: Optional[bool] = None
     profile_url: Optional[str] = None
 
     @model_validator(mode="before")
@@ -108,10 +108,10 @@ class SocialPost(BaseCanonicalModel):
     media: List[MediaAsset] = Field(default_factory=list)
     hashtags: List[str] = Field(default_factory=list)
     mentions: List[str] = Field(default_factory=list)
-    views_count: int = 0
-    likes_count: int = 0
-    comments_count: int = 0
-    shares_count: int = 0
+    views_count: Optional[int] = None
+    likes_count: Optional[int] = None
+    comments_count: Optional[int] = None
+    shares_count: Optional[int] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -137,8 +137,8 @@ class Comment(BaseCanonicalModel):
     author_handle: Optional[str] = None
     text: str
     published_at: Optional[str] = None
-    likes: int = 0
-    likes_count: int = 0
+    likes: Optional[int] = None
+    likes_count: Optional[int] = None
     is_reply: bool = False
     is_creator_reply: bool = False
     parent_comment_id: Optional[str] = None
@@ -157,11 +157,11 @@ class Comment(BaseCanonicalModel):
 class MetricSnapshot(BaseCanonicalModel):
     """Engagement metrics snapshot at a point in time."""
     target_id: str
-    views: int = 0
-    likes: int = 0
-    comments: int = 0
-    shares: int = 0
-    saves: int = 0
+    views: Optional[int] = None
+    likes: Optional[int] = None
+    comments: Optional[int] = None
+    shares: Optional[int] = None
+    saves: Optional[int] = None
     captured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -174,7 +174,7 @@ class Evidence(BaseCanonicalModel):
     content: Optional[Union[Dict[str, Any], str]] = None
     text_content: Optional[str] = None
     captured_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    reliability: float = 1.0
+    reliability: Optional[float] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -185,16 +185,18 @@ class ObservedFact(BaseCanonicalModel):
     evidence_ids: List[str] = Field(default_factory=list)
     statement: str
     observed_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    confidence: float = 1.0
+    confidence: Optional[float] = None
 
     @model_validator(mode="before")
     @classmethod
     def sync_evidence_ids(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            if "evidence_id" in data and not data.get("evidence_ids"):
+            if "evidence_id" in data and data.get("evidence_id") and not data.get("evidence_ids"):
                 data["evidence_ids"] = [data["evidence_id"]]
             elif data.get("evidence_ids") and not data.get("evidence_id"):
                 data["evidence_id"] = data["evidence_ids"][0]
+            if not data.get("evidence_ids"):
+                raise ValueError("ObservedFact requires at least one evidence_id")
         return data
 
 
@@ -206,7 +208,7 @@ class StructuredClassification(BaseCanonicalModel):
     evidence_id: str
     engine: str = "jev"
     category: str
-    confidence: float = 1.0
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
 
 class Inference(BaseCanonicalModel):
@@ -220,10 +222,12 @@ class Inference(BaseCanonicalModel):
     @classmethod
     def sync_fact_ids(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            if "derived_from_fact_ids" in data and not data.get("fact_ids"):
+            if data.get("derived_from_fact_ids") and not data.get("fact_ids"):
                 data["fact_ids"] = data["derived_from_fact_ids"]
             elif data.get("fact_ids") and not data.get("derived_from_fact_ids"):
                 data["derived_from_fact_ids"] = data["fact_ids"]
+            if not data.get("fact_ids"):
+                raise ValueError("Inference requires at least one supporting fact_id")
         return data
 
 
@@ -252,8 +256,8 @@ class ProductBatch(BaseCanonicalModel):
     fruit_lot: Optional[str] = None
     packaging_lot: Optional[str] = None
     operator: Optional[str] = None
-    qc_status: QCStatus = QCStatus.PASSED
-    total_units: int = 0
+    qc_status: QCStatus = QCStatus.PENDING
+    total_units: Optional[int] = None
 
 
 class ChainOfCustodyLeg(BaseCanonicalModel):
@@ -265,8 +269,8 @@ class ChainOfCustodyLeg(BaseCanonicalModel):
     origin: str
     destination: str
     temp_celsius: Optional[float] = None
-    received_good: int = 0
-    received_damaged: int = 0
+    received_good: Optional[int] = None
+    received_damaged: Optional[int] = None
 
 
 class Incident(BaseCanonicalModel):
@@ -295,7 +299,7 @@ class JevAnswer(BaseModel):
     question_name: str
     decision_type: str  # choice, score, noul
     value: Union[str, float, bool]
-    confidence: float = Field(ge=0.0, le=1.0, default=1.0)
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     probabilities: Optional[Dict[str, float]] = None
 
 
@@ -303,13 +307,13 @@ class JevDecision(BaseCanonicalModel):
     """Set of Jev System One decisions on an evidence unit."""
     decision_id: str = Field(default_factory=lambda: str(uuid4()))
     evidence_id: str
-    model: str = "jev-latest"
-    taxonomy_version: str = "1.0.0"
+    model: Optional[str] = None
+    taxonomy_version: str = "1.1.0"
     question_set_version: str = "1.0.0"
     question_name: Optional[str] = None
     question_type: Optional[Union[str, JevQuestionType]] = None
     answer: Optional[Union[str, float, bool]] = None
-    confidence: float = 1.0
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     latency_ms: Optional[float] = None
     answers: List[JevAnswer] = Field(default_factory=list)
     root_cause_status: RootCauseStatus = RootCauseStatus.UNDETERMINED
@@ -317,13 +321,13 @@ class JevDecision(BaseCanonicalModel):
 
 class JevTaxonomy(BaseModel):
     """Taxonomy container model."""
-    version: str = "1.0.0"
+    version: str = "1.1.0"
     categories: Dict[str, List[str]] = Field(default_factory=dict)
 
     @classmethod
     def get_default_taxonomy(cls) -> "JevTaxonomy":
         return cls(
-            version="1.0.0",
+            version="1.1.0",
             categories={
                 "brand": Brand.list_values(),
                 "business_function": BusinessFunction.list_values(),
@@ -342,7 +346,7 @@ class BusinessSignal(BaseCanonicalModel):
     business_function: BusinessFunction = BusinessFunction.UNKNOWN
     sales_channel: SalesChannel = SalesChannel.UNKNOWN
     evidence_ids: List[str] = Field(default_factory=list)
-    confidence: float = Field(ge=0.0, le=1.0, default=0.8)
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
 
 class ComplaintSignal(BaseCanonicalModel):

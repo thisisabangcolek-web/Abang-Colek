@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from src.config import COVERAGE_FILE
 
 class CoverageStatus(str, Enum):
     COMPLETE_VERIFIED="COMPLETE_VERIFIED"
@@ -19,7 +20,7 @@ class CoverageStatus(str, Enum):
     ERROR="ERROR"
 
 class CoverageTracker:
-    DEFAULT_OUTPUT=Path("D:/ABANGCOLEK/data/coverage/collection_manifest.json")
+    DEFAULT_OUTPUT=COVERAGE_FILE
     def __init__(self,output_path:Optional[Path]=None):
         self.output_path=Path(output_path or self.DEFAULT_OUTPUT); self.output_path.parent.mkdir(parents=True,exist_ok=True); self.entries=[]; self._load_existing()
     def _load_existing(self):

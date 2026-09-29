@@ -1,19 +1,20 @@
-﻿"""No-key TikTok photo-post fallback using gallery-dl for browser-discovered URLs."""
+"""No-key TikTok photo-post fallback using gallery-dl for browser-discovered URLs."""
 from __future__ import annotations
 import asyncio, hashlib, json, shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from src.config import DATA_DIR, RAW_DIR
 from src.collectors.base import BaseCollector
 from src.collectors.coverage_tracker import CoverageStatus, CoverageTracker
 
 class TikTokGalleryPhotoAdapter:
     COLLECTOR_NAME="tiktok_gallery_dl_photo_v1"
     def __init__(self, discovery_file:Optional[Path]=None, storage_dir:Optional[Path]=None, coverage:Optional[CoverageTracker]=None):
-        self.discovery_file=Path(discovery_file or "D:/ABANGCOLEK/data/coverage/discovery/tiktok_styloairpool_public_urls.json")
-        self.raw_dir=Path("D:/ABANGCOLEK/data/extractor_raw/tiktok_gallery"); self.raw_dir.mkdir(parents=True,exist_ok=True)
-        self.checkpoint=Path("D:/ABANGCOLEK/data/coverage/checkpoints/tiktok_gallery_photo.json"); self.checkpoint.parent.mkdir(parents=True,exist_ok=True)
-        self.collector=BaseCollector(storage_dir=storage_dir or Path("D:/ABANGCOLEK/data/raw"),collector_name=self.COLLECTOR_NAME)
+        self.discovery_file=Path(discovery_file or DATA_DIR/"coverage"/"discovery"/"tiktok_styloairpool_public_urls.json")
+        self.raw_dir=DATA_DIR/"extractor_raw"/"tiktok_gallery"; self.raw_dir.mkdir(parents=True,exist_ok=True)
+        self.checkpoint=DATA_DIR/"coverage"/"checkpoints"/"tiktok_gallery_photo.json"; self.checkpoint.parent.mkdir(parents=True,exist_ok=True)
+        self.collector=BaseCollector(storage_dir=storage_dir or RAW_DIR,collector_name=self.COLLECTOR_NAME)
         self.coverage=coverage or CoverageTracker(); self.bin=shutil.which("gallery-dl") or shutil.which("gallery-dl.exe")
     def _urls(self)->List[str]:
         if not self.discovery_file.exists(): return []

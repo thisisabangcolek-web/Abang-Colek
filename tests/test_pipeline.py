@@ -12,20 +12,20 @@ from src.models.canonical import SocialAccount, Inference, ComplaintSignal, Prod
 def test_canonical_models_still_validate():
     a=SocialAccount(platform='threads',handle='@example',display_name='Example')
     assert a.handle=='@example'
-    assert Inference(statement='possible',confidence=.5).confidence==.5
-    with pytest.raises(ValidationError): Inference(statement='bad',confidence=1.5)
+    assert Inference(statement='possible',fact_ids=['fact1'],confidence=.5).confidence==.5
+    with pytest.raises(ValidationError): Inference(statement='bad',fact_ids=['fact1'],confidence=1.5)
     s=ComplaintSignal(evidence_id='ev1',issue_class=IssueClass.LEAKAGE,possible_process_stage=ProcessStage.UNKNOWN)
     assert s.root_cause_status==RootCauseStatus.UNDETERMINED
     p=ProductEntity(brand=Brand.JERUX,name='Test Product'); assert p.brand==Brand.JERUX
 
 
 def test_taxonomy_core_is_present():
-    assert TAXONOMY_VERSION=='1.0.0'
+    assert TAXONOMY_VERSION=='1.1.0'
     assert {'ABANGCOLEK','LIURLELEH','JERUX','UNKNOWN'}.issubset(set(Brand.list_values()))
     assert {'PRODUCTION','PACKAGING','TRANSPORT','CUSTOMER_SERVICE'}.issubset(set(BusinessFunction.list_values()))
     assert {'DIRECT','AGENT','EVENT','SOCIAL_COMMERCE'}.issubset(set(SalesChannel.list_values()))
     assert {'COMPLAINT','LOCATION_QUERY','PURCHASE'}.issubset(set(CustomerIntent.list_values()))
-    assert get_taxonomy_summary()['version']=='1.0.0'
+    assert get_taxonomy_summary()['version']==TAXONOMY_VERSION
 
 
 def test_fallback_cache_is_non_authoritative_and_reused(tmp_path):

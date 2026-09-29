@@ -224,7 +224,7 @@ def test_jev_models():
 
     # JevTaxonomy
     tax = JevTaxonomy.get_default_taxonomy()
-    assert tax.version == "1.0.0"
+    assert tax.version == "1.1.0"
     assert "ABANGCOLEK" in tax.categories["brand"]
     assert "PRODUCTION" in tax.categories["business_function"]
     assert "PURCHASE" in tax.categories["customer_intent"]

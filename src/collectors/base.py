@@ -8,12 +8,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
+from src.config import RAW_DIR
 from src.evidence.integrity import EvidenceIntegrityError, validate_raw_record
 
 
 class BaseCollector:
-    DEFAULT_STORAGE_DIR = Path("D:/ABANGCOLEK/data/raw")
-    COLLECTOR_VERSION = "2.0.0"
+    DEFAULT_STORAGE_DIR = RAW_DIR
+    COLLECTOR_VERSION = "4.0.0"
 
     def __init__(self, storage_dir: Optional[Path] = None, collector_name: Optional[str] = None):
         self.storage_dir = Path(storage_dir or self.DEFAULT_STORAGE_DIR)

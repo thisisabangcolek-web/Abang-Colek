@@ -1,4 +1,4 @@
-﻿"""No-key TikTok metadata backfill from browser-discovered public post URLs using yt-dlp."""
+"""No-key TikTok metadata backfill from browser-discovered public post URLs using yt-dlp."""
 from __future__ import annotations
 
 import asyncio
@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from src.config import DATA_DIR, RAW_DIR
 from src.collectors.base import BaseCollector
 from src.collectors.coverage_tracker import CoverageStatus, CoverageTracker
 
@@ -24,12 +25,12 @@ class TikTokYtDlpAdapter:
         coverage: Optional[CoverageTracker] = None,
         concurrency: int = 4,
     ) -> None:
-        self.discovery_file = Path(discovery_file or "D:/ABANGCOLEK/data/coverage/discovery/tiktok_styloairpool_public_urls.json")
-        self.raw_dir = Path("D:/ABANGCOLEK/data/extractor_raw/tiktok")
+        self.discovery_file = Path(discovery_file or DATA_DIR/"coverage"/"discovery"/"tiktok_styloairpool_public_urls.json")
+        self.raw_dir = DATA_DIR/"extractor_raw"/"tiktok"
         self.raw_dir.mkdir(parents=True, exist_ok=True)
-        self.checkpoint = Path("D:/ABANGCOLEK/data/coverage/checkpoints/tiktok_ytdlp_processed.json")
+        self.checkpoint = DATA_DIR/"coverage"/"checkpoints"/"tiktok_ytdlp_processed.json"
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
-        self.collector = BaseCollector(storage_dir=storage_dir or Path("D:/ABANGCOLEK/data/raw"), collector_name=self.COLLECTOR_NAME)
+        self.collector = BaseCollector(storage_dir=storage_dir or RAW_DIR, collector_name=self.COLLECTOR_NAME)
         self.coverage = coverage or CoverageTracker()
         self.concurrency = max(1, min(int(concurrency), 6))
         self.bin = shutil.which("yt-dlp") or shutil.which("yt-dlp.exe")

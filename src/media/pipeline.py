@@ -1,4 +1,4 @@
-﻿"""Forensic media pipeline. Derived media evidence requires actual local media bytes."""
+"""Forensic media pipeline. Derived media evidence requires actual local media bytes."""
 from __future__ import annotations
 
 import hashlib
@@ -8,13 +8,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from src.config import DATA_DIR, RAW_DIR
 from src.evidence.integrity import validate_raw_record
 from src.models.canonical import MediaAsset
 
 
 class MediaProcessor:
-    DEFAULT_RAW_DIR = Path("D:/ABANGCOLEK/data/raw")
-    DEFAULT_OUTPUT_FILE = Path("D:/ABANGCOLEK/data/media_processed_v3.json")
+    DEFAULT_RAW_DIR = RAW_DIR
+    DEFAULT_OUTPUT_FILE = DATA_DIR / "media_processed_v4.json"
     V2_OUTPUT_FILE = DEFAULT_OUTPUT_FILE
 
     def __init__(self, raw_dir: Optional[Union[str, Path]] = None,
@@ -112,6 +113,21 @@ class MediaProcessor:
     def process_raw_file(self, file_path: Union[str, Path]) -> List[Dict[str, Any]]:
         with open(Path(file_path), "r", encoding="utf-8") as f:
             return self.extract_media_from_record(json.load(f))
+
+    def process_records(self, records: List[Dict[str, Any]], output_file: Optional[Union[str, Path]] = None, run_id: Optional[str] = None, input_fingerprint: Optional[str] = None) -> List[Dict[str, Any]]:
+        target = Path(output_file or self.output_file)
+        assets: List[Dict[str, Any]] = []
+        for record in records:
+            for asset in self.extract_media_from_record(record):
+                if run_id: asset["run_id"] = run_id
+                if input_fingerprint: asset["input_fingerprint"] = input_fingerprint
+                assets.append(asset)
+        self.processed_assets = assets
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_suffix(".tmp")
+        tmp.write_text(json.dumps(assets, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(target)
+        return assets
 
     def process_all_sources(self, raw_dir: Optional[Union[str, Path]] = None,
                             output_file: Optional[Union[str, Path]] = None) -> List[Dict[str, Any]]:

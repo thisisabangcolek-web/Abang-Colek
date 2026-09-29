@@ -1,9 +1,11 @@
 """Run maximum legitimate social backfill and emit auditable coverage."""
 from __future__ import annotations
+import argparse
 import asyncio
 import json
 from pathlib import Path
 from urllib.parse import urlsplit
+from src.config import DATA_DIR, OWNER_EXPORT_INBOX, PROJECT_ROOT, REPORTS_DIR
 from src.collectors.coverage_tracker import CoverageStatus, CoverageTracker
 from src.collectors.threads_adapter import ThreadsOfficialApiAdapter
 from src.collectors.tiktok_adapter import TikTokOfficialApiAdapter
@@ -13,11 +15,11 @@ from src.collectors.facebook_adapter import FacebookPagesApiAdapter
 from src.collectors.browser_public_adapter import PublicBrowserCollector, collect_default_public_profiles
 from src.collectors.tiktok_ytdlp_adapter import TikTokYtDlpAdapter
 from src.collectors.tiktok_gallery_adapter import TikTokGalleryPhotoAdapter
-from src.jev.batch_runner import JevBatchRunner
 from src.scripts.local_pc_discovery import main as run_local_pc_discovery
 from src.scripts.run_local_discovery_jev import main as run_local_discovery_jev
+from src.scripts.rebuild_pipeline import rebuild as rebuild_pipeline
 
-ROOT=Path('D:/ABANGCOLEK'); INBOX=ROOT/'data/owner_exports/inbox'; REPORT=ROOT/'reports/SOCIAL-BACKFILL-REPORT.md'
+ROOT=PROJECT_ROOT; INBOX=OWNER_EXPORT_INBOX; REPORT=REPORTS_DIR/'SOCIAL-BACKFILL-REPORT.md'
 TERMS=['ABANGCOLEK','ABANG COLEK','STYLOAIRPOOL','AIRPOOLSTYLO','LIURLELEH','LIUR LELEH HOUSE','THE FAMOUS JERUX','JERUX']
 
 def import_exports(tracker):
@@ -81,62 +83,59 @@ def write_report(summary):
     lines += ['','## Rule','', 'A source is never described as complete beyond the scope actually exhausted. Missing OAuth/export data remains a coverage gap; it is never replaced with generated evidence.','']
     REPORT.write_text('\n'.join(lines),encoding='utf-8')
 
-def main():
-    local_discovery=run_local_pc_discovery()
-    local_jev=run_local_discovery_jev()
-    new_tiktok_seeds=merge_local_tiktok_seeds()
+def main(argv=None):
+    ap=argparse.ArgumentParser()
+    ap.add_argument("--local-discovery",action="store_true",help="Explicitly allow redacted local-PC discovery and JEV classification")
+    ap.add_argument("--skip-analysis",action="store_true",help="Collect only; do not rebuild authoritative JEV/BI/graph outputs")
+    ap.add_argument("--dry-run",action="store_true",help="Show planned lanes without network calls or external JEV calls")
+    args=ap.parse_args(argv)
+    if args.dry_run:
+        from src.collectors.http_utils import load_env_file
+        import os
+        load_env_file()
+        plan={"network_calls":False,"local_discovery":bool(args.local_discovery),"analysis":not args.skip_analysis,
+              "public_lanes":["threads_public_browser:@airpoolstylo","instagram_public_browser:@airpoolstylo","tiktok_public_browser:@styloairpool","tiktok_yt-dlp","tiktok_gallery-dl"],
+              "owner_export_files":[p.name for p in sorted(INBOX.glob('*')) if p.is_file()],
+              "official_auth_present":{"threads":bool(os.getenv('THREADS_ACCESS_TOKEN') or os.getenv('META_THREADS_ACCESS_TOKEN')),
+                                      "tiktok":bool(os.getenv('TIKTOK_ACCESS_TOKEN') or os.getenv('TIKTOK_DISPLAY_ACCESS_TOKEN')),
+                                      "instagram":bool(os.getenv('INSTAGRAM_ACCESS_TOKEN') or os.getenv('META_USER_ACCESS_TOKEN')),
+                                      "facebook":bool(os.getenv('FACEBOOK_USER_ACCESS_TOKEN') or os.getenv('META_USER_ACCESS_TOKEN')),
+                                      "typesafe_jev":bool(os.getenv('TYPESAFE_API_KEY'))}}
+        print(json.dumps(plan,indent=2)); return plan
+    local_discovery={"status":"DISABLED","count":0}; local_jev={"status":"DISABLED","models":{}}; new_tiktok_seeds=0; local_profile_counts={}
+    if args.local_discovery:
+        local_discovery=run_local_pc_discovery(enabled=True); local_jev=run_local_discovery_jev(enabled=True); new_tiktok_seeds=merge_local_tiktok_seeds()
     tracker=CoverageTracker(); tracker.entries=[]; tracker._save()
     public_counts=asyncio.run(collect_default_public_profiles(tracker))
-    local_profile_counts=asyncio.run(collect_local_profile_leads(tracker))
-    asyncio.run(TikTokYtDlpAdapter(coverage=tracker).collect_all())
-    asyncio.run(TikTokGalleryPhotoAdapter(coverage=tracker).collect_all())
+    if args.local_discovery: local_profile_counts=asyncio.run(collect_local_profile_leads(tracker))
+    asyncio.run(TikTokYtDlpAdapter(coverage=tracker).collect_all()); asyncio.run(TikTokGalleryPhotoAdapter(coverage=tracker).collect_all())
     import_exports(tracker)
     threads=ThreadsOfficialApiAdapter(coverage=tracker)
     try:
-        threads.collect_user_posts('me',limit=50,collect_replies=True)
+        threads.collect_user_posts("me",limit=50,collect_replies=True)
         if threads.access_token:
-            for term in TERMS: threads.keyword_search(term,search_type='RECENT')
+            for term in TERMS: threads.keyword_search(term,search_type="RECENT")
     except Exception: pass
-    tiktok=TikTokOfficialApiAdapter(coverage=tracker)
-    try: tiktok.collect_user_videos('styloairpool',limit=20)
-    except Exception: pass
-    instagram=InstagramOfficialApiAdapter(coverage=tracker)
-    try: instagram.collect_all('instagram professional account')
-    except Exception: pass
-    facebook=FacebookPagesApiAdapter(coverage=tracker)
-    try: facebook.collect_all_managed_pages()
-    except Exception: pass
-    # JEV is mandatory for authoritative interpretation. It is fail-closed: no silent fallback.
-    jev_result = JevBatchRunner(force_fallback=False).run_all()
+    for action in (lambda: TikTokOfficialApiAdapter(coverage=tracker).collect_user_videos("styloairpool",limit=20),
+                   lambda: InstagramOfficialApiAdapter(coverage=tracker).collect_all("instagram professional account"),
+                   lambda: FacebookPagesApiAdapter(coverage=tracker).collect_all_managed_pages()):
+        try: action()
+        except Exception: pass
     summary=tracker.get_summary()
-    summary['local_pc_discovery']={
-        'candidates': local_discovery.get('count',0),
-        'jev_status': local_jev.get('status'),
-        'jev_model_counts': local_jev.get('models',{}),
-        'new_tiktok_seed_urls': new_tiktok_seeds,
-        'public_profile_counts': public_counts,
-        'local_profile_lead_counts': local_profile_counts,
-        'authoritative_for_business_truth': False,
-    }
-    summary['jev']={
-        'status': jev_result.get('status'),
-        'decision_engine': jev_result.get('decision_engine'),
-        'total_raw_captures_loaded': jev_result.get('total_raw_captures_loaded',0),
-        'duplicate_snapshots_suppressed': jev_result.get('duplicate_snapshots_suppressed',0),
-        'total_raw_processed': jev_result.get('total_raw_processed',0),
-        'total_decisions': jev_result.get('total_decisions',0),
-    }
-    write_report(summary)
-    with REPORT.open('a',encoding='utf-8') as f:
-        f.write('\n## Live JEV Gate\n\n')
-        f.write(f"- Status: **{jev_result.get('status')}**\n")
-        f.write(f"- Decision engine: **{jev_result.get('decision_engine')}**\n")
-        f.write(f"- Raw capture snapshots loaded: **{jev_result.get('total_raw_captures_loaded',0)}**\n")
-        f.write(f"- Repeat snapshots suppressed: **{jev_result.get('duplicate_snapshots_suppressed',0)}**\n")
-        f.write(f"- Unique evidence processed: **{jev_result.get('total_raw_processed',0)}**\n")
-        f.write(f"- Decisions: **{jev_result.get('total_decisions',0)}**\n")
-        f.write('- Rule: authoritative interpretation requires live TypeSafe JEV; fallback decisions are rejected.\n')
-    print(json.dumps(summary,indent=2,ensure_ascii=False))
-    return summary
+    summary["local_pc_discovery"]={"enabled":args.local_discovery,"candidates":local_discovery.get("count",0),"jev_status":local_jev.get("status"),"jev_model_counts":local_jev.get("models",{}),"new_tiktok_seed_urls":new_tiktok_seeds,"public_profile_counts":public_counts,"local_profile_lead_counts":local_profile_counts,"authoritative_for_business_truth":False}
+    analysis={"status":"SKIPPED"}
+    if not args.skip_analysis:
+        try:
+            built=rebuild_pipeline(); analysis={"status":"ACTIVE","run_id":built["run_id"],"validation":built["validation"],"bi_status":built["bi"].get("status")}
+        except Exception as exc:
+            analysis={"status":"BLOCKED","error":str(exc)[:1000],"note":"Collection succeeded; previous active derived run remains unchanged."}
+    summary["analysis_run"]=analysis; write_report(summary)
+    with REPORT.open("a",encoding="utf-8") as f:
+        f.write("\n## Atomic Analysis Run\n\n")
+        f.write(f"- Status: **{analysis.get('status')}**\n")
+        if analysis.get("run_id"): f.write(f"- Active run: **{analysis['run_id']}**\n")
+        if analysis.get("error"): f.write(f"- Blocker: `{analysis['error']}`\n")
+        f.write("- Rule: collection is preserved on JEV outage; derived business interpretation changes only after a fully validated atomic run.\n")
+    print(json.dumps(summary,indent=2,ensure_ascii=False)); return summary
 
-if __name__=='__main__': main()
+if __name__=="__main__": main()

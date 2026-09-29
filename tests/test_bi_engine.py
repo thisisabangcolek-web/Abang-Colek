@@ -1,4 +1,4 @@
-﻿import json
+import json
 from pathlib import Path
 import pytest
 from src.analytics.bi_engine import BusinessIntelligenceEngine
@@ -26,7 +26,8 @@ def test_bi_zero_evidence_never_invents_counts(tmp_path):
     assert counts['total_complaints']==0
     assert counts['total_inquiries']==0
     assert result['channel_breakdown']['channels']=={}
-    assert result['complaint_clusters']['issue_clusters']=={}
+    assert result['complaint_clusters']['structured_customer_complaints']=={}
+    assert result['complaint_clusters']['page_level_complaint_signals']=={}
     assert result['business_eras']==[]
     assert result['business_signals']['total_variants_cataloged']==0
     assert result['status']=='PARTIAL_EVIDENCE_ONLY'
@@ -49,12 +50,11 @@ def test_bi_does_not_read_legacy_or_synthetic_paths(tmp_path):
 def test_batch_classification_suppresses_repeated_capture_snapshots(tmp_path):
     raw=tmp_path/'raw'; raw.mkdir()
     collector=BaseCollector(storage_dir=raw,collector_name='browser_test')
-    common=dict(platform='instagram',source_id='post1',source_type='public_post_snapshot',source_url='https://example.test/post1',access_method='PUBLIC_BROWSER',provenance_verified=True)
-    receipt={'http_status':200,'html_sha256':'a'*64}
-    p1={'text':'older capture','data_origin':'PUBLIC_PLATFORM','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
-    p2={'text':'newer capture','data_origin':'PUBLIC_PLATFORM','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
-    collector.ingest(p1,capture_receipt=receipt,**common)
-    collector.ingest(p2,capture_receipt=receipt,**common)
+    common=dict(platform='instagram',source_id='post1',source_type='public_post_snapshot',source_url='https://example.test/post1',access_method='OFFICIAL_API',provenance_verified=True)
+    p1={'text':'older capture','data_origin':'OFFICIAL_API','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
+    p2={'text':'newer capture','data_origin':'OFFICIAL_API','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
+    collector.ingest(p1,capture_receipt={'http_status':200,'response_sha256':'a'*64},**common)
+    collector.ingest(p2,capture_receipt={'http_status':200,'response_sha256':'b'*64},**common)
     runner=JevBatchRunner(raw_dir=raw,normalized_dir=tmp_path/'norm',output_file=tmp_path/'out.json')
     records=runner.load_raw_sources()
     assert runner.total_raw_captures_loaded==2

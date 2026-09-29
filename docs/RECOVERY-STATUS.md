@@ -2,28 +2,38 @@
 
 ## Current gate — 2026-09-29
 - Code integrity: PASS
-- Tests: 32/32 PASS
-- TypeSafe JEV connectivity: PASS (`jev-1.13.0` live response)
-- Production raw evidence: 113 authoritative records
+- Tests: 33/33 PASS
+- TypeSafe JEV connectivity: PASS (`jev-1.13.0`)
+- Raw capture snapshots retained: 167 authoritative records
+- Repeated capture snapshots suppressed from classification: 39
+- Unique evidence classified by JEV: 128
+- Authoritative live-JEV decisions: 304
 - Synthetic contamination: 0 production records
 - Digital Twin: BLOCKED pending broader historical coverage/internal discovery
 - PRD: BLOCKED pending Digital Twin/internal validation
 
 ## No-key collection now working
-- Threads `@airpoolstylo`: public Playwright profile + 15 public post pages captured.
-- Instagram `@airpoolstylo`: public Playwright profile + 11 public post/reel pages captured.
-- TikTok `@styloairpool`: public Playwright URL discovery working.
-- TikTok metadata: 78 video URLs extracted by yt-dlp without API key.
-- TikTok photo fallback: 2/2 photo posts extracted by gallery-dl.
-- Current TikTok discovery checkpoint: 80 unique public URLs accumulated across runs.
-- Official OAuth/API collectors remain available as optional enrichment, not a hard dependency.
+- Threads `@airpoolstylo`: profile + 15 public post pages captured.
+- Instagram `@airpoolstylo`: profile + 11 public post/reel pages captured.
+- TikTok `@styloairpool`: 81 public post URLs accumulated from public-browser + local-history discovery.
+- TikTok metadata: 79/81 URLs extracted by yt-dlp without platform API key; 2 URLs remain failed.
+- TikTok photo fallback: 2 photo posts extracted by gallery-dl.
+- Candidate Instagram `@abangcolek`: profile + 4 public posts captured; relationship remains evidence-led, not assumed official.
+- Candidate Jerux reseller `@jeruxsliurlelehterengganu`: profile + 12 public posts captured.
+- Official OAuth/API collectors remain optional enrichment, not a hard dependency.
 
-## Verified complaint signal
-A real Threads post was captured with HTTP 200, platform URL, timestamp, HTML hash and raw evidence hash. It states that some first-shipment orders leaked, replacements were provided, and packing/bottle improvements were planned.
+## Local-PC discovery lane
+- Current clean discovery set: 15 leads (9 sanitized browser-history URLs + 6 current project artifacts).
+- Legacy/provisional ABANGCOLEK documents are excluded from future local discovery.
+- All 15 leads were evaluated by live JEV `jev-1.13.0` as `DISCOVERY_ONLY`.
+- Local-PC leads are never promoted directly to business facts; public URLs must be recaptured with provenance first.
+- This lane surfaced one previously missing TikTok URL and two additional Instagram account/profile leads.
 
-Live JEV classified the real record as:
-- issue class: `LEAKAGE`
-- possible process stage: `UNKNOWN`
-- root cause: `UNDETERMINED`
+## Current JEV signal summary (deduplicated)
+- Brands: ABANGCOLEK 21, JERUX 18, LIURLELEH 10, MULTI_BRAND 2, UNKNOWN 77.
+- Business functions: DIRECT_SALES 46, MARKETING 43, EVENT 18, CUSTOMER_SERVICE 6, PRODUCTION 6, TRANSPORT 4, AGENT_MANAGEMENT 4, FINANCE 1.
+- Complaint records flagged: 6; issue classes = LEAKAGE 2, TASTE 1, UNKNOWN 3.
+- Signals: new variant 5, new territory 21, mobile team/pop-up 46, recruitment 12.
 
-This is the intended epistemic behaviour: identify an incident without blaming production, transport or agents without supporting operational evidence.
+## Root-cause rule
+A real captured complaint may be classified as `LEAKAGE`, but JEV must keep root cause `UNDETERMINED` until operational evidence links the incident to production, packaging, transport, storage, agent handling, or another stage.

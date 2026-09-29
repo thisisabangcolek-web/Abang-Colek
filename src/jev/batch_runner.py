@@ -28,17 +28,32 @@ class JevBatchRunner:
         self.output_file = Path(output_file or self.DEFAULT_OUTPUT_FILE)
         self.engine = engine or JevEngine(force_fallback=force_fallback)
         self.force_fallback = force_fallback
+        self.total_raw_captures_loaded = 0
+        self.duplicate_snapshots_suppressed = 0
 
     def load_raw_sources(self) -> List[Dict[str, Any]]:
-        records: List[Dict[str, Any]] = []
+        captures: List[Dict[str, Any]] = []
         if not self.raw_dir.exists():
-            return records
+            return captures
         for file_path in sorted(self.raw_dir.glob("*.json")):
             with open(file_path, "r", encoding="utf-8") as f:
                 record = json.load(f)
             validate_raw_record(record, require_authoritative=True)
             record["_filepath"] = str(file_path)
-            records.append(record)
+            captures.append(record)
+        self.total_raw_captures_loaded = len(captures)
+        latest: Dict[tuple, Dict[str, Any]] = {}
+        for record in captures:
+            key = (
+                record.get("source_platform"),
+                record.get("source_id") or record.get("source_native_id"),
+                record.get("collector"),
+            )
+            previous = latest.get(key)
+            if previous is None or str(record.get("captured_at", "")) >= str(previous.get("captured_at", "")):
+                latest[key] = record
+        records = list(latest.values())
+        self.duplicate_snapshots_suppressed = max(0, len(captures) - len(records))
         return records
 
     @staticmethod
@@ -158,6 +173,8 @@ class JevBatchRunner:
             "authoritative": True,
             "decision_engine": "TYPESAFE_JEV" if decisions else "NOT_RUN",
             "status": "COMPLETE" if decisions else "BLOCKED_NO_EVIDENCE",
+            "total_raw_captures_loaded": self.total_raw_captures_loaded,
+            "duplicate_snapshots_suppressed": self.duplicate_snapshots_suppressed,
             "total_raw_processed": len(raw_records),
             "total_normalized_processed": len(normalized),
             "total_decisions": len(decisions),

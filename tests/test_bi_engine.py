@@ -2,6 +2,7 @@
 from pathlib import Path
 import pytest
 from src.analytics.bi_engine import BusinessIntelligenceEngine
+from src.collectors.base import BaseCollector
 from src.jev.batch_runner import JevBatchRunner
 
 
@@ -43,3 +44,20 @@ def test_bi_does_not_read_legacy_or_synthetic_paths(tmp_path):
     engine=BusinessIntelligenceEngine(raw_dir=tmp_path/'raw',normalized_dir=tmp_path/'norm',decisions_file=tmp_path/'live.json',metrics_file=tmp_path/'m.json',coverage_file=tmp_path/'c.json')
     assert 'synthetic' not in str(engine.raw_dir).lower()
     assert 'jev_decisions.json' not in str(engine.decisions_file).lower()
+
+
+def test_batch_classification_suppresses_repeated_capture_snapshots(tmp_path):
+    raw=tmp_path/'raw'; raw.mkdir()
+    collector=BaseCollector(storage_dir=raw,collector_name='browser_test')
+    common=dict(platform='instagram',source_id='post1',source_type='public_post_snapshot',source_url='https://example.test/post1',access_method='PUBLIC_BROWSER',provenance_verified=True)
+    receipt={'http_status':200,'html_sha256':'a'*64}
+    p1={'text':'older capture','data_origin':'PUBLIC_PLATFORM','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
+    p2={'text':'newer capture','data_origin':'PUBLIC_PLATFORM','evidence_class':'RAW_EVIDENCE','synthetic':False,'authoritative':True}
+    collector.ingest(p1,capture_receipt=receipt,**common)
+    collector.ingest(p2,capture_receipt=receipt,**common)
+    runner=JevBatchRunner(raw_dir=raw,normalized_dir=tmp_path/'norm',output_file=tmp_path/'out.json')
+    records=runner.load_raw_sources()
+    assert runner.total_raw_captures_loaded==2
+    assert runner.duplicate_snapshots_suppressed==1
+    assert len(records)==1
+    assert records[0]['raw_payload']['text']=='newer capture'

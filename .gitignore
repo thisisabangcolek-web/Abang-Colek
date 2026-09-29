@@ -27,4 +27,5 @@ reports/legacy/
 
 data/coverage/checkpoints/
 data/coverage/discovery/
+data/local_discovery/
 data/normalized_v2/

@@ -10,6 +10,8 @@ __pycache__/
 data/raw/
 data/owner_exports/
 data/quarantine/
+data/extractor_raw/
+data/browser_snapshots/
 forensic_archive/
 # Derived caches/databases are reproducible
 data/jev_cache*.json
@@ -21,3 +23,8 @@ data/media_processed*.json
 # Archived pre-recovery material
 docs/legacy/
 reports/legacy/
+
+
+data/coverage/checkpoints/
+data/coverage/discovery/
+data/normalized_v2/

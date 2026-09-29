@@ -75,5 +75,48 @@ class JevEngine:
         if self.force_fallback:
             low=text.lower(); out=self._fallback(ck,question_set_version,{"signal_new_variant":any(x in low for x in ("produk baru","flava baru","new flavour")),"signal_new_territory":any(x in low for x in ("brunei","johor","selangor","shah alam")),"signal_mobile_team":any(x in low for x in ("pacak","on ground","pop-up","popup")),"signal_recruitment":any(x in low for x in ("join","agent","ejen","part time","full time"))}); return self._finish(ck,out)
         out=self._live(text,{"signal_new_variant":Noul("Does this evidence explicitly signal a new product or variant?"),"signal_new_territory":Noul("Does this evidence explicitly signal geographical expansion?"),"signal_mobile_team":Noul("Does this evidence signal a mobile sales team or temporary activation?"),"signal_recruitment":Noul("Does this evidence signal workforce or agent recruitment?")},ck,question_set_version); a=out["answers"]; out["classified"]={k:a.get(k,{}).get("noul",.5)>.5 for k in keys}; return self._finish(ck,out)
+    def evaluate_bundle(self,text:str,question_set_version="2.0.0",metadata=None):
+        keys=["is_commercial","brand","business_function","sales_channel","exposes_production","customer_intent","is_purchase_intent","is_location_query","is_complaint","issue_class","possible_process_stage","requires_immediate_review","signal_new_variant","signal_new_territory","signal_mobile_team","signal_recruitment"]
+        ck=self.compute_cache_key(text,question_set_version,keys); c=self._cached(ck)
+        if c: return c
+        if self.force_fallback: raise JevUnavailableError("Bundled authoritative evaluation does not permit deterministic fallback")
+        q={
+            "is_commercial":Noul("Is this commercial, marketing, promotional, sales, recruitment, customer-service, or operational business content?"),
+            "brand":Choice("Which brand identity is primary?",Brand.criteria()),
+            "business_function":Choice("What is the primary operational business function?",BusinessFunction.criteria()),
+            "sales_channel":Choice("What sales or distribution channel is referenced?",SalesChannel.criteria()),
+            "exposes_production":Noul("Does this evidence directly expose production or preparation activity?"),
+            "customer_intent":Choice("What is the primary customer intent visible in this evidence?",CustomerIntent.criteria()),
+            "is_purchase_intent":Noul("Does this evidence contain purchase or order intent?"),
+            "is_location_query":Noul("Does this evidence contain a request about a stall, store, spot, or location?"),
+            "is_complaint":Noul("Does this evidence contain a customer complaint, dissatisfaction, defect, or service issue?"),
+            "issue_class":Choice("If an issue is present, what class is directly described? Otherwise choose UNKNOWN.",IssueClass.criteria()),
+            "possible_process_stage":Choice("If investigation is warranted, which process stage is only a hypothesis? Otherwise choose UNKNOWN.",ProcessStage.criteria()),
+            "requires_immediate_review":Noul("Does this evidence warrant immediate human review?"),
+            "signal_new_variant":Noul("Does this evidence explicitly signal a new product or variant?"),
+            "signal_new_territory":Noul("Does this evidence explicitly signal geographical expansion?"),
+            "signal_mobile_team":Noul("Does this evidence signal a mobile sales team, temporary stall, pop-up, or activation?"),
+            "signal_recruitment":Noul("Does this evidence signal workforce, seller, reseller, stockist, or agent recruitment?")}
+        out=self._live(text,q,ck,question_set_version); a=out["answers"]
+        out["classified"]={
+            "is_commercial":a.get("is_commercial",{}).get("noul",.5)>.5,
+            "brand":a.get("brand",{}).get("choice",Brand.UNKNOWN.value),
+            "business_function":a.get("business_function",{}).get("choice",BusinessFunction.UNKNOWN.value),
+            "sales_channel":a.get("sales_channel",{}).get("choice",SalesChannel.UNKNOWN.value),
+            "exposes_production":a.get("exposes_production",{}).get("noul",.5)>.5,
+            "customer_intent":a.get("customer_intent",{}).get("choice",CustomerIntent.UNKNOWN.value),
+            "is_purchase_intent":a.get("is_purchase_intent",{}).get("noul",.5)>.5,
+            "is_location_query":a.get("is_location_query",{}).get("noul",.5)>.5,
+            "is_complaint":a.get("is_complaint",{}).get("noul",.5)>.5,
+            "issue_class":a.get("issue_class",{}).get("choice",IssueClass.UNKNOWN.value),
+            "possible_process_stage":a.get("possible_process_stage",{}).get("choice",ProcessStage.UNKNOWN.value),
+            "requires_immediate_review":a.get("requires_immediate_review",{}).get("noul",.5)>.5,
+            "signal_new_variant":a.get("signal_new_variant",{}).get("noul",.5)>.5,
+            "signal_new_territory":a.get("signal_new_territory",{}).get("noul",.5)>.5,
+            "signal_mobile_team":a.get("signal_mobile_team",{}).get("noul",.5)>.5,
+            "signal_recruitment":a.get("signal_recruitment",{}).get("noul",.5)>.5}
+        out["root_cause_status"]=RootCauseStatus.UNDETERMINED.value; out["root_cause_rule_enforced"]=True
+        return self._finish(ck,out)
+
     def evaluate_all(self,text:str,question_set_version="1.0.0",metadata=None,verified_evidence_attached=False):
         return {"content":self.evaluate_content(text,question_set_version,metadata),"interaction":self.evaluate_interaction(text,question_set_version,metadata),"complaint":self.evaluate_complaint(text,question_set_version,metadata,verified_evidence_attached),"business_signal":self.evaluate_business_signal(text,question_set_version,metadata)}

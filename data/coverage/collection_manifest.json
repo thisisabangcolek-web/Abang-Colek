@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0.0",
-  "generated_at": "2026-09-29T04:06:27.008649+00:00",
-  "total_sources": 4,
+  "generated_at": "2026-09-29T07:15:50.619207+00:00",
+  "total_sources": 9,
   "sources": [
     {
       "platform": "threads",
@@ -94,6 +94,124 @@
       ],
       "notes": "FACEBOOK_USER_ACCESS_TOKEN/META_USER_ACCESS_TOKEN missing",
       "last_updated": "2026-09-29T04:06:27.008649+00:00"
+    },
+    {
+      "platform": "threads",
+      "account": "@airpoolstylo:public-browser",
+      "source_name": "@airpoolstylo:public-browser",
+      "status": "PARTIAL_UNKNOWN",
+      "record_count": 16,
+      "data_origin": "PUBLIC_PLATFORM",
+      "posts_recovered": 15,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Public browser collection cannot prove deleted/private history completeness",
+        "Owner export/browser session may expose additional history"
+      ],
+      "notes": "Discovered 15 unique post URLs via public JS-rendered profile; no API key used.",
+      "last_updated": "2026-09-29T06:56:04.680716+00:00",
+      "public_browser": true,
+      "block_reason": null
+    },
+    {
+      "platform": "instagram",
+      "account": "@airpoolstylo:public-browser",
+      "source_name": "@airpoolstylo:public-browser",
+      "status": "PARTIAL_UNKNOWN",
+      "record_count": 12,
+      "data_origin": "PUBLIC_PLATFORM",
+      "posts_recovered": 11,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Public browser collection cannot prove deleted/private history completeness",
+        "Owner export/browser session may expose additional history"
+      ],
+      "notes": "Discovered 11 unique post URLs via public JS-rendered profile; no API key used.",
+      "last_updated": "2026-09-29T06:58:46.411298+00:00",
+      "public_browser": true,
+      "block_reason": null
+    },
+    {
+      "platform": "tiktok",
+      "account": "@styloairpool:public-browser",
+      "source_name": "@styloairpool:public-browser",
+      "status": "PARTIAL_UNKNOWN",
+      "record_count": 1,
+      "data_origin": "PUBLIC_PLATFORM",
+      "posts_recovered": 0,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Public browser collection cannot prove deleted/private history completeness",
+        "Owner export/browser session may expose additional history"
+      ],
+      "notes": "Discovered 64 unique post URLs via public JS-rendered profile; no API key used.",
+      "last_updated": "2026-09-29T07:05:30.052794+00:00",
+      "public_browser": true,
+      "block_reason": null
+    },
+    {
+      "platform": "tiktok",
+      "account": "@styloairpool:yt-dlp",
+      "source_name": "@styloairpool:yt-dlp",
+      "status": "PARTIAL_UNKNOWN",
+      "record_count": 78,
+      "data_origin": "PUBLIC_PLATFORM",
+      "posts_recovered": 78,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": "2026-01-17T08:28:55+00:00",
+      "newest_recovered_at": "2026-09-26T04:47:18+00:00",
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "URL discovery derives from public profile scrolling and cannot prove deleted/private history completeness",
+        "Comments/replies require a separate browser/session collection lane",
+        "2 discovered URLs failed metadata extraction"
+      ],
+      "notes": "No-key yt-dlp metadata for 78/80 browser-discovered URLs; failed=2.",
+      "last_updated": "2026-09-29T07:08:40.628734+00:00",
+      "api_key_used": false
+    },
+    {
+      "platform": "tiktok",
+      "account": "@styloairpool:gallery-dl-photo",
+      "source_name": "@styloairpool:gallery-dl-photo",
+      "status": "PARTIAL_PLATFORM_LIMIT",
+      "record_count": 2,
+      "data_origin": "PUBLIC_PLATFORM",
+      "posts_recovered": 2,
+      "comments_recovered": 0,
+      "replies_recovered": 0,
+      "media_recovered": 0,
+      "oldest_recovered_at": null,
+      "newest_recovered_at": null,
+      "pagination_exhausted": false,
+      "owner_export_imported": false,
+      "known_gaps": [
+        "Only browser-discovered public photo posts are covered"
+      ],
+      "notes": "gallery-dl photo fallback: processed=2, failed=0",
+      "last_updated": "2026-09-29T07:15:50.619207+00:00",
+      "api_key_used": false
     }
   ]
 }

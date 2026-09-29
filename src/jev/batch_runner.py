@@ -1,4 +1,4 @@
-﻿"""Authoritative JEV batch runner. Production evidence only; no synthetic fallback."""
+"""Authoritative JEV batch runner. Production evidence only; no synthetic fallback."""
 from __future__ import annotations
 
 import json
@@ -48,7 +48,7 @@ class JevBatchRunner:
             return payload.strip()
         if not isinstance(payload, dict):
             return ""
-        for key in ("text", "post_text", "video_description", "title", "caption", "description", "message"):
+        for key in ("text", "visible_text", "post_text", "video_description", "title", "caption", "description", "message"):
             value = payload.get(key)
             if isinstance(value, str) and value.strip():
                 return value.strip()
@@ -106,7 +106,7 @@ class JevBatchRunner:
             "source_platform": norm.get("platform"),
             "evaluation_type": kind,
             "taxonomy_version": self.engine.taxonomy_version,
-            "question_set_version": "1.0.0",
+            "question_set_version": result.get("question_set_version", "2.0.0"),
             "model": result["model_resolved"],
             "decision_engine": "TYPESAFE_JEV",
             "authoritative": True,
@@ -124,17 +124,30 @@ class JevBatchRunner:
         decisions: List[Dict[str, Any]] = []
         for norm in normalized:
             text = norm["text"]
-            content = self.engine.evaluate_content(text)
-            decisions.append(self._wrap(run_id, norm, "content", content))
-            signal = self.engine.evaluate_business_signal(text)
-            decisions.append(self._wrap(run_id, norm, "business_signal", signal))
             rt = str(norm.get("record_type", "")).lower()
-            if "comment" in rt or "reply" in rt:
-                interaction = self.engine.evaluate_interaction(text)
-                decisions.append(self._wrap(run_id, norm, "interaction", interaction))
-                complaint = self.engine.evaluate_complaint(text, verified_evidence_attached=False)
-                if complaint.get("classified", {}).get("is_complaint"):
-                    wrapped = self._wrap(run_id, norm, "complaint", complaint)
+            bundle = self.engine.evaluate_bundle(text)
+            cls = bundle.get("classified", {})
+
+            def view(keys):
+                out = dict(bundle)
+                out["classified"] = {k: cls.get(k) for k in keys}
+                return out
+
+            decisions.append(self._wrap(run_id, norm, "content", view([
+                "is_commercial", "brand", "business_function", "sales_channel", "exposes_production"
+            ])))
+            decisions.append(self._wrap(run_id, norm, "business_signal", view([
+                "signal_new_variant", "signal_new_territory", "signal_mobile_team", "signal_recruitment"
+            ])))
+
+            if "comment" in rt or "reply" in rt or rt == "public_post_snapshot":
+                decisions.append(self._wrap(run_id, norm, "interaction", view([
+                    "customer_intent", "is_purchase_intent", "is_location_query", "is_complaint"
+                ])))
+                if cls.get("is_complaint"):
+                    wrapped = self._wrap(run_id, norm, "complaint", view([
+                        "is_complaint", "issue_class", "possible_process_stage", "requires_immediate_review"
+                    ]))
                     wrapped["root_cause_status"] = RootCauseStatus.UNDETERMINED.value
                     wrapped["root_cause_rule_enforced"] = True
                     decisions.append(wrapped)

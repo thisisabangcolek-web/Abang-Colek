@@ -1,5 +1,6 @@
 """Run maximum legitimate social backfill and emit auditable coverage."""
 from __future__ import annotations
+import asyncio
 import json
 from pathlib import Path
 from src.collectors.coverage_tracker import CoverageStatus, CoverageTracker
@@ -8,6 +9,10 @@ from src.collectors.tiktok_adapter import TikTokOfficialApiAdapter
 from src.collectors.owner_export_importer import OwnerExportImporter
 from src.collectors.instagram_adapter import InstagramOfficialApiAdapter
 from src.collectors.facebook_adapter import FacebookPagesApiAdapter
+from src.collectors.browser_public_adapter import collect_default_public_profiles
+from src.collectors.tiktok_ytdlp_adapter import TikTokYtDlpAdapter
+from src.collectors.tiktok_gallery_adapter import TikTokGalleryPhotoAdapter
+from src.jev.batch_runner import JevBatchRunner
 
 ROOT=Path('D:/ABANGCOLEK'); INBOX=ROOT/'data/owner_exports/inbox'; REPORT=ROOT/'reports/SOCIAL-BACKFILL-REPORT.md'
 TERMS=['ABANGCOLEK','ABANG COLEK','STYLOAIRPOOL','AIRPOOLSTYLO','LIURLELEH','LIUR LELEH HOUSE','THE FAMOUS JERUX','JERUX']
@@ -33,7 +38,11 @@ def write_report(summary):
     REPORT.write_text('\n'.join(lines),encoding='utf-8')
 
 def main():
-    tracker=CoverageTracker(); tracker.entries=[]; tracker._save(); import_exports(tracker)
+    tracker=CoverageTracker(); tracker.entries=[]; tracker._save()
+    asyncio.run(collect_default_public_profiles(tracker))
+    asyncio.run(TikTokYtDlpAdapter(coverage=tracker).collect_all())
+    asyncio.run(TikTokGalleryPhotoAdapter(coverage=tracker).collect_all())
+    import_exports(tracker)
     threads=ThreadsOfficialApiAdapter(coverage=tracker)
     try:
         threads.collect_user_posts('me',limit=50,collect_replies=True)
@@ -49,6 +58,24 @@ def main():
     facebook=FacebookPagesApiAdapter(coverage=tracker)
     try: facebook.collect_all_managed_pages()
     except Exception: pass
-    summary=tracker.get_summary(); write_report(summary); print(json.dumps(summary,indent=2,ensure_ascii=False)); return summary
+    # JEV is mandatory for authoritative interpretation. It is fail-closed: no silent fallback.
+    jev_result = JevBatchRunner(force_fallback=False).run_all()
+    summary=tracker.get_summary()
+    summary['jev']={
+        'status': jev_result.get('status'),
+        'decision_engine': jev_result.get('decision_engine'),
+        'total_raw_processed': jev_result.get('total_raw_processed',0),
+        'total_decisions': jev_result.get('total_decisions',0),
+    }
+    write_report(summary)
+    with REPORT.open('a',encoding='utf-8') as f:
+        f.write('\n## Live JEV Gate\n\n')
+        f.write(f"- Status: **{jev_result.get('status')}**\n")
+        f.write(f"- Decision engine: **{jev_result.get('decision_engine')}**\n")
+        f.write(f"- Raw evidence processed: **{jev_result.get('total_raw_processed',0)}**\n")
+        f.write(f"- Decisions: **{jev_result.get('total_decisions',0)}**\n")
+        f.write('- Rule: authoritative interpretation requires live TypeSafe JEV; fallback decisions are rejected.\n')
+    print(json.dumps(summary,indent=2,ensure_ascii=False))
+    return summary
 
 if __name__=='__main__': main()

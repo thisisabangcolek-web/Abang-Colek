@@ -1,36 +1,29 @@
-﻿# ABANGCOLEK Forensic Recovery Status
+# ABANGCOLEK Forensic Recovery Status
 
-## Current gate
+## Current gate — 2026-09-29
 - Code integrity: PASS
-- Tests: 29/29 PASS
-- TypeSafe JEV connectivity: PASS (`jev-1.13.0` resolved during live check)
-- Production raw evidence: 0 authoritative records
-- Social backfill: BLOCKED_AUTH on Threads, TikTok, Instagram, Facebook
-- Digital Twin: BLOCKED
-- PRD: BLOCKED
+- Tests: 32/32 PASS
+- TypeSafe JEV connectivity: PASS (`jev-1.13.0` live response)
+- Production raw evidence: 113 authoritative records
+- Synthetic contamination: 0 production records
+- Digital Twin: BLOCKED pending broader historical coverage/internal discovery
+- PRD: BLOCKED pending Digital Twin/internal validation
 
-## What was repaired
-1. Synthetic/manual evidence can no longer self-mark as authoritative.
-2. Old fake/manual records and derived outputs were quarantined.
-3. JEV authoritative path is fail-closed; deterministic fallback is test/dev only.
-4. BI reads only clean raw/normalized/live-JEV paths and invents no minimum counts/eras/variants.
-5. Media analysis cannot emit transcript/OCR/vision claims without actual media bytes.
-6. Knowledge Graph is rebuilt from evidence only; hard-coded business facts are disabled.
-7. Threads, TikTok, Instagram and Facebook official collectors now have pagination/coverage handling.
-8. Owner-export importer hashes the source archive/member and records provenance.
-9. Legacy PRD/Digital Twin/specifications are archived and current paths are gated.
+## No-key collection now working
+- Threads `@airpoolstylo`: public Playwright profile + 15 public post pages captured.
+- Instagram `@airpoolstylo`: public Playwright profile + 11 public post/reel pages captured.
+- TikTok `@styloairpool`: public Playwright URL discovery working.
+- TikTok metadata: 78 video URLs extracted by yt-dlp without API key.
+- TikTok photo fallback: 2/2 photo posts extracted by gallery-dl.
+- Current TikTok discovery checkpoint: 80 unique public URLs accumulated across runs.
+- Official OAuth/API collectors remain available as optional enrichment, not a hard dependency.
 
-## Remaining external blockers
-The app cannot lawfully recover owner-account history until account authorization or owner exports are provided. Missing access is recorded as a coverage gap and is never replaced with generated data.
+## Verified complaint signal
+A real Threads post was captured with HTTP 200, platform URL, timestamp, HTML hash and raw evidence hash. It states that some first-shipment orders leaked, replacements were provided, and packing/bottle improvements were planned.
 
-## Run order after access is available
-```powershell
-cd D:\ABANGCOLEK
-python -m src.scripts.run_backfill
-python -m src.jev.batch_runner
-python -c "from src.media.pipeline import MediaProcessor; MediaProcessor().process_all_sources()"
-python -m src.knowledge.graph
-python -m src.analytics.bi_engine
-python -m src.scripts.verify_integrity
-pytest -q
-```
+Live JEV classified the real record as:
+- issue class: `LEAKAGE`
+- possible process stage: `UNKNOWN`
+- root cause: `UNDETERMINED`
+
+This is the intended epistemic behaviour: identify an incident without blaming production, transport or agents without supporting operational evidence.
